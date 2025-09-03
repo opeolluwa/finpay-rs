@@ -10,7 +10,23 @@ path = "src/lib.rs"
 [dependencies]
 async-graphql = "7.0.17"
 async-graphql-axum = "7.0.17"
-axum = "0.8.4"
+axum = { version = "0.8.4", features = [
+    "macros",
+    "multipart",
+    "tracing",
+    "ws",
+] }
 serde = { version = "1.0.219", features = ["derive"] }
-sqlx = { version = "0.8.6", features = ["runtime-tokio", "tls-rustls-aws-lc-rs"] }
+sqlx = { version = "0.8.6", features = [
+    "runtime-tokio",
+    "postgres",
+    "macros",
+    "uuid",
+    "migrate",
+    "time",
+    "chrono",
+    "tls-rustls",
+] }
+thiserror = "2.0.16"
 tokio = { version = "1.47.1", features = ["full"] }
+ulid = { version = "1.2.1", features = ["serde"] }
