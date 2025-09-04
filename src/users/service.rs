@@ -3,11 +3,11 @@ use crate::users::adapters::CreateUserRequest;
 use crate::users::adapters::LoginUserRequest;
 use crate::users::repositories::UsersRepository;
 
-pub struct UserService {
+pub struct UsersService {
     repository: UsersRepository,
 }
 
-impl UserService {
+impl UsersService {
     pub fn new(repository: UsersRepository) -> Self {
         Self { repository }
     }
@@ -21,7 +21,7 @@ pub trait UsersServiceExt {
     async fn reset_password(&self) -> Result<(), ServiceError>;
 }
 
-impl UsersServiceExt for UserService {
+impl UsersServiceExt for UsersService {
     async fn register(&self, payload: &CreateUserRequest) -> Result<(), ServiceError> {
         todo!()
     }

@@ -37,5 +37,14 @@ tokio = { version = "1.47.1", features = ["full"] }
 tower-http = { version = "0.6.1", features = ["trace"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-ulid = { version = "1.2.1", features = ["serde"] }
 validator = { version = "0.20.0", features = ["derive"] }
+openssl = { version = "0.10.73", features = ["vendored"] }
+redis = { version = "0.32.4", features = [
+    "aio",
+    "cluster",
+    "connection-manager",
+    "tokio-comp",
+    "uuid",
+] }
+serde_json = "1.0.143"
+uuid = { version = "1.18.1", features = ["serde", "v4", "v7", "v8"] }

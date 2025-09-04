@@ -3,8 +3,8 @@ use crate::users::adapters::CreateUserRequest;
 use sqlx::Pool;
 use sqlx::Postgres;
 use std::sync::Arc;
-use ulid::Ulid;
-
+use uuid::Timestamp;
+use uuid::Uuid;
 pub struct UsersRepository {
     pool: Arc<Pool<Postgres>>,
 }
@@ -23,6 +23,7 @@ pub trait UsersRepositoryExt {
 
 impl UsersRepositoryExt for UsersRepository {
     async fn create_account(&self, payload: &CreateUserRequest) -> Result<(), RepositoryError> {
+        let identifier = Uuid::new_v4(); //TODO: use v7
         let query = r#"
         INSERT INTO
     users (
@@ -41,7 +42,7 @@ impl UsersRepositoryExt for UsersRepository {
     VALUES($1, $2, $3, $4, $5, %6, $7, $8, $9, $10, $11)
         "#;
         sqlx::query(query)
-            .bind(Ulid::new().to_string())
+            .bind(identifier)
             .bind(&payload.first_name)
             .bind(&payload.last_name)
             .bind(&payload.email)

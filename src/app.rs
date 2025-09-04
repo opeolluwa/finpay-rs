@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::users::users_router;
-use axum::{Router, http::StatusCode, routing::get};
+use axum::{Router, routing::get};
 use sqlx::Pool;
 
 pub fn load_routes(pool: Arc<Pool<sqlx::Postgres>>) -> Router {
