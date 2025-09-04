@@ -1,3 +1,5 @@
+use core::error;
+
 use axum::extract::rejection::{FormRejection, JsonRejection};
 use axum::response::Response;
 use axum::{http::StatusCode, response::IntoResponse};
@@ -5,8 +7,6 @@ use redis::RedisError;
 
 use crate::errors::{AppError, AuthenticationError, RepositoryError};
 use crate::utils::ApiResponseBuilder;
-
-
 
 #[derive(thiserror::Error, Debug)]
 pub enum ServiceError {
@@ -32,6 +32,8 @@ pub enum ServiceError {
     RedisError(#[from] RedisError),
     #[error("an internal error occured while parsing message")]
     SerdeJsonError(#[from] serde_json::Error),
+    #[error(transparent)]
+    BcryptError(#[from] bcrypt::BcryptError),
 }
 
 impl ServiceError {
@@ -48,6 +50,7 @@ impl ServiceError {
             ServiceError::AppError(err) => err.status_code(),
             ServiceError::RedisError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             ServiceError::SerdeJsonError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }
