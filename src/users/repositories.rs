@@ -3,7 +3,6 @@ use crate::users::adapters::CreateUserRequest;
 use sqlx::Pool;
 use sqlx::Postgres;
 use std::sync::Arc;
-use uuid::Timestamp;
 use uuid::Uuid;
 pub struct UsersRepository {
     pool: Arc<Pool<Postgres>>,
