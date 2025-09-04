@@ -1,5 +1,6 @@
-use crate::errors::service::ServiceError;
+use crate::errors::ServiceError;
 use crate::users::adapters::CreateUserRequest;
+use crate::users::adapters::LoginUserRequest;
 use crate::users::repositories::UsersRepository;
 
 pub struct UserService {
@@ -12,15 +13,13 @@ impl UserService {
     }
 }
 
-
-pub trait  UsersServiceExt  {
-    async fn register(&self, payload: &CreateUserRequest)-> Result<(), ServiceError>;
-    async fn login(&self, payload: &LoginUserRequest)-> Result<(), ServiceError>;
+pub trait UsersServiceExt {
+    async fn register(&self, payload: &CreateUserRequest) -> Result<(), ServiceError>;
+    async fn login(&self, payload: &LoginUserRequest) -> Result<(), ServiceError>;
     async fn logout(&self) -> Result<(), ServiceError>;
     async fn forgot_password(&self) -> Result<(), ServiceError>;
     async fn reset_password(&self) -> Result<(), ServiceError>;
 }
-
 
 impl UsersServiceExt for UserService {
     async fn register(&self, payload: &CreateUserRequest) -> Result<(), ServiceError> {

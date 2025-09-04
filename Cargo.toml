@@ -16,6 +16,11 @@ axum = { version = "0.8.4", features = [
     "tracing",
     "ws",
 ] }
+axum-extra = { version = "0.10.1", features = ["typed-header"] }
+bcrypt = "0.17.0"
+chrono = { version = "0.4.41", features = ["serde"] }
+jsonwebtoken = "9.3.1"
+log = "0.4.27"
 serde = { version = "1.0.219", features = ["derive"] }
 sqlx = { version = "0.8.6", features = [
     "runtime-tokio",
@@ -29,4 +34,8 @@ sqlx = { version = "0.8.6", features = [
 ] }
 thiserror = "2.0.16"
 tokio = { version = "1.47.1", features = ["full"] }
+tower-http = { version = "0.6.1", features = ["trace"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 ulid = { version = "1.2.1", features = ["serde"] }
+validator = { version = "0.20.0", features = ["derive"] }

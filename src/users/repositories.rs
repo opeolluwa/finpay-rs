@@ -1,4 +1,4 @@
-use crate::errors::repository::RepositoryError;
+use crate::errors::RepositoryError;
 use crate::users::adapters::CreateUserRequest;
 use sqlx::Pool;
 use sqlx::Postgres;

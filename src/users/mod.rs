@@ -1,10 +1,9 @@
-
-mod repositories;
 mod adapters;
 mod entities;
-mod middleware;
-mod router;
+mod enums;
 mod handlers;
+mod middleware;
+mod repositories;
+mod router;
 mod service;
-
 pub use router::users_router;

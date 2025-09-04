@@ -1,5 +1,6 @@
-use crate::users::entities::AccountType;
 use serde::{Deserialize, Serialize};
+
+use crate::users::enums::AccountType;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CreateUserRequest {
@@ -13,4 +14,11 @@ pub struct CreateUserRequest {
     pub address: String,
     pub phone_number: String,
     pub occupation: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+
+pub struct LoginUserRequest {
+    pub email: String,
+    pub password: String,
 }
