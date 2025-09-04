@@ -1,7 +1,7 @@
 
 services:
   app:
-    container_name: aers
+    container_name: finpay
     build:
       context: .
       dockerfile: docker/${ENVIRONMENT}/Dockerfile
@@ -54,8 +54,8 @@ services:
     ports:
       - "8888:80"
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@aers.com
-      PGADMIN_DEFAULT_PASSWORD: aers
+      PGADMIN_DEFAULT_EMAIL: admin@finpay.com
+      PGADMIN_DEFAULT_PASSWORD: finpay
     volumes:
       - pgadmin-data:/var/lib/pgadmin
     depends_on:
@@ -99,4 +99,4 @@ volumes:
 
 networks:
   internal:
-   name: aers_internal
+   name: finpay_internal

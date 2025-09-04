@@ -48,9 +48,9 @@ RUN lame --version
 WORKDIR /app
 
 # copy the app
-COPY --from=build /app/target/release/aers ./aers 
+COPY --from=build /app/target/release/finpay ./finpay 
 # copy the models and other statics files 
-COPY --from=build /app/crates/aers_email_client/templates ./templates
+COPY --from=build /app/crates/finpay_email_client/templates ./templates
 COPY --from=build /app/resources ./resources
 #copy the migrations
 COPY --from=build /app/migrations ./migrations
@@ -74,4 +74,4 @@ RUN echo "/usr/local/lib" >> /etc/ld.so.conf.d/tika.conf && ldconfig
 
 EXPOSE 8080
 
-CMD ["./aers"]
+CMD ["./finpay"]
