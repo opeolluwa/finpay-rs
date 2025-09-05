@@ -30,6 +30,11 @@ pub trait UsersRepositoryExt {
         &self,
         identifier: &Uuid,
     ) -> impl std::future::Future<Output = Result<Option<User>, RepositoryError>> + Send;
+
+    fn find_user_by_email(
+        &self,
+        email: &str,
+    ) -> impl std::future::Future<Output = Result<Option<User>, RepositoryError>> + Send;
 }
 
 impl UsersRepositoryExt for UsersRepository {
@@ -76,6 +81,14 @@ impl UsersRepositoryExt for UsersRepository {
     async fn find_user_by_pk(&self, identifier: &Uuid) -> Result<Option<User>, RepositoryError> {
         sqlx::query_as::<_, User>("SELECT * FROM users WHERE identifier = $1")
             .bind(&identifier)
+            .fetch_optional(self.pool.as_ref())
+            .await
+            .map_err(RepositoryError::from)
+    }
+
+    async fn find_user_by_email(&self, email: &str) -> Result<Option<User>, RepositoryError> {
+        sqlx::query_as::<_, User>("SELECT * FROM users WHERE email = $1")
+            .bind(&email)
             .fetch_optional(self.pool.as_ref())
             .await
             .map_err(RepositoryError::from)

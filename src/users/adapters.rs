@@ -1,8 +1,9 @@
 use serde::{Deserialize, Serialize};
+use validator::Validate;
 
 use crate::users::enums::AccountType;
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Validate)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateUserRequest {
     pub first_name: String,
