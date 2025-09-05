@@ -1,3 +1,4 @@
+use crate::errors::RepositoryError;
 use crate::{
     errors::ServiceError,
     users::{
@@ -6,6 +7,7 @@ use crate::{
         service::{UsersService, UsersServiceExt},
     },
 };
+use crate::errors::RepositoryError::DuplicateRecord;
 
 #[derive(Clone)]
 pub struct AuthenticationService {
@@ -35,9 +37,12 @@ pub trait AuthenticationServiceExt {
 
 impl AuthenticationServiceExt for AuthenticationService {
     async fn register(&self, payload: &CreateUserRequest) -> Result<User, ServiceError> {
-        let user_iddentifier = self.user_service.create_account(&payload).await?;
+ if self.user_service.find_user_by_email(&payload.email).await.ok().is_some(){
+     return Err(ServiceError::RepositoryError(DuplicateRecord))
+ }
+        let user_identifier = self.user_service.create_account(&payload).await?;
 
-        let user = self.user_service.find_user_by_pk(&user_iddentifier).await?;
+        let user = self.user_service.find_user_by_pk(&user_identifier).await?;
 
         Ok(user)
     }

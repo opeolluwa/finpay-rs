@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+
+{% block title %}Confirm email{% endblock %}
+
+{% block content %}
+
+<div class="container" style="padding-bottom: 16px;">
+    Hi there!
+</div>
+
+<div class="container">
+    <p class="leading-text">We&apos;re glad to onboard you on our platform. Use the OTP below to verify your email</p>
+</div>
+
+<div class="container"
+    style="display: flex; justify-items: center; align-items: center; justify-content: center; margin: 12px 0; font-weight: 600; font-size: 50px; line-height: 48px; text-align: center; letter-spacing: 2px; font-family: 'Courier New', Courier, monospace;">
+    {{otp}}
+</div>
+
+<div class="container">
+    Questions? Email us at <span class="accent-text">support@eckko.com</span>
+</div>
+
+{% endblock %}

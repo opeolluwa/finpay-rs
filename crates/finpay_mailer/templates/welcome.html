@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to Eckko{% endblock %}
+
+{% block content %}
+
+<div class="container" style="padding-bottom: 16px;">
+    Hello {{ user_name }},
+</div>
+
+<div class="container">
+    <p class="leading-text">
+        Welcome to <strong>Eckko!</strong> — we’re excited to have you on board!
+    </p>
+
+    <p style="margin-top: 12px;">
+        Your account has been successfully created. You can now explore all the features and get started right away.
+    </p>
+
+
+</div>
+
+<div class="container" style="margin-top: 24px;">
+    <p>
+        If you have any questions, feel free to reach out to our support team at <span
+            class="accent-text">support@mailer.com</span>.
+    </p>
+</div>
+
+<div class="container" style="margin-top: 24px;">
+    We're glad you're here,<br />
+    — The Eckko Team
+</div>
+
+{% endblock %}

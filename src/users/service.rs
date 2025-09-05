@@ -6,6 +6,7 @@ use sqlx::Postgres;
 use uuid::Uuid;
 
 use crate::errors::RepositoryError;
+use crate::errors::RepositoryError::RecordNotFound;
 use crate::errors::ServiceError;
 use crate::users::adapters::CreateUserRequest;
 use crate::users::adapters::LoginUserRequest;
@@ -40,15 +41,20 @@ pub trait UsersServiceExt {
     fn find_user_by_pk(
         &self,
         identifier: &Uuid,
-    ) -> impl std::future::Future<Output = Result<User, RepositoryError>> + Send;
+    ) -> impl std::future::Future<Output = Result<User, ServiceError>> + Send;
+
+    fn find_user_by_email(
+        &self,
+        email: &str,
+    ) -> impl std::future::Future<Output = Result<User, ServiceError>> + Send;
 }
 
 impl UsersServiceExt for UsersService {
     async fn create_account(&self, payload: &CreateUserRequest) -> Result<Uuid, ServiceError> {
-        let hahshed_password = self.hash_password(&payload.password)?;
+        let hashed_password = self.hash_password(&payload.password)?;
 
         let request = CreateUserRequest {
-            password: hahshed_password,
+            password: hashed_password,
             ..payload.clone()
         };
 
@@ -56,10 +62,17 @@ impl UsersServiceExt for UsersService {
         Ok(result.identifier)
     }
 
-    async fn find_user_by_pk(&self, identifier: &Uuid) -> Result<User, RepositoryError> {
+    async fn find_user_by_pk(&self, identifier: &Uuid) -> Result<User, ServiceError> {
         self.repository
             .find_user_by_pk(identifier)
             .await?
-            .ok_or(RepositoryError::RecordNotFound)
+            .ok_or(ServiceError::RepositoryError(RecordNotFound))
+    }
+
+    async fn find_user_by_email(&self, email: &str) -> Result<User, ServiceError> {
+        self.repository
+            .find_user_by_email(email)
+            .await?
+            .ok_or(ServiceError::RepositoryError(RecordNotFound))
     }
 }

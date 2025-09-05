@@ -1,0 +1,17 @@
+[package]
+name = "finapay_mailer"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+askama.workspace = true
+finpay_utils = { version = "0.1.0", path = "../finpay_utils" }
+lettre = { version = "0.11.18", features = [
+    "aws-lc-rs",
+    "rustls",
+    "rustls-platform-verifier",
+    "tracing",
+] }
+log.workspace = true
+serde = { workspace = true, features = ["derive"] }
+thiserror.workspace = true
