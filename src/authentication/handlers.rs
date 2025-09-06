@@ -29,10 +29,10 @@ pub async fn signup(
 }
 
 pub async fn verify_account(
-    State(authntication_service): State<AuthenticationService>,
+    State(authentication_service): State<AuthenticationService>,
     AuthenticatedRequest { request, claims }: AuthenticatedRequest<VerifyAccountRequest>,
 ) -> Result<ApiResponse<VerifyAccountResponse>, ServiceError> {
-    let verify_account_response = authntication_service
+    let verify_account_response = authentication_service
         .verify_account(&claims, &request)
         .await?;
     Ok(ApiResponse::builder()
@@ -43,10 +43,10 @@ pub async fn verify_account(
 }
 
 pub async fn login(
-    State(authntication_service): State<AuthenticationService>,
+    State(authentication_service): State<AuthenticationService>,
     ValidatedRequest(request): ValidatedRequest<LoginRequest>,
 ) -> Result<ApiResponse<LoginResponse>, ServiceError> {
-    let login_response = authntication_service.login(&request).await?;
+    let login_response = authentication_service.login(&request).await?;
     Ok(ApiResponse::builder()
         .status_code(StatusCode::OK)
         .data(login_response)
@@ -55,19 +55,19 @@ pub async fn login(
 }
 
 pub async fn forgotten_password(
-    State(authntication_service): State<AuthenticationService>,
+    State(authentication_service): State<AuthenticationService>,
     ValidatedRequest(request): ValidatedRequest<ForgottenPasswordRequest>,
 ) -> Result<ApiResponse<ForgottenPasswordRequest>, ServiceError> {
-    let forgotten_password_response = authntication_service.forgotten_password(&request).await?;
+    let forgotten_password_response = authentication_service.forgotten_password(&request).await?;
 
     todo!()
 }
 
 pub async fn set_new_password(
-    State(authntication_service): State<AuthenticationService>,
+    State(authentication_service): State<AuthenticationService>,
     AuthenticatedRequest { request, claims }: AuthenticatedRequest<SetNewPasswordRequest>, // claims: Claims,
 ) -> Result<ApiResponse<()>, ServiceError> {
-    let _ = authntication_service
+    let _ = authentication_service
         .set_new_password(&request, &claims)
         .await?;
 
@@ -78,10 +78,10 @@ pub async fn set_new_password(
 }
 
 pub async fn request_refresh_token(
-    State(authntication_service): State<AuthenticationService>,
+    State(authentication_service): State<AuthenticationService>,
     claims: Claims,
 ) -> Result<ApiResponse<RefreshTokenResponse>, ServiceError> {
-    let refresh_token_response = authntication_service.request_refresh_token(&claims).await?;
+    let refresh_token_response = authentication_service.request_refresh_token(&claims).await?;
 
     Ok(ApiResponse::builder()
         .data(refresh_token_response)
@@ -94,10 +94,10 @@ pub async fn logout() -> Result<ApiResponse<()>, ServiceError> {
 }
 
 pub async fn verify_reset_otp(
-    State(authntication_service): State<AuthenticationService>,
+    State(authentication_service): State<AuthenticationService>,
     AuthenticatedRequest { request, claims }: AuthenticatedRequest<VerifyAccountRequest>,
 ) -> Result<ApiResponse<VerifyAccountResponse>, ServiceError> {
-    let verify_account_response = authntication_service
+    let verify_account_response = authentication_service
         .verify_reset_otp(&claims, &request)
         .await?;
     Ok(ApiResponse::builder()

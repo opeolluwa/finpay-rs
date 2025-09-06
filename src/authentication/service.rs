@@ -1,5 +1,5 @@
 use bcrypt::hash;
-use bcrypt::{DEFAULT_COST, verify};
+use bcrypt::{verify, DEFAULT_COST};
 use finpay_mailer::ConfirmEmailTemplate;
 use finpay_mailer::Email;
 use finpay_mailer::EmailClient;
@@ -263,6 +263,10 @@ impl AuthenticationServiceExt for AuthenticationService {
             return Err(ServiceError::AuthenticationError(InvalidOtp));
         }
 
+        self.user_service
+            .set_verified(&claims.user_identifier)
+            .await?;
+        
         Ok(VerifyAccountResponse {})
     }
 

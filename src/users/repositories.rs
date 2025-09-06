@@ -32,6 +32,11 @@ pub trait UsersRepositoryExt {
         &self,
         email: &str,
     ) -> impl std::future::Future<Output = Result<Option<User>, RepositoryError>> + Send;
+
+    fn set_verified(
+        &self,
+        user_identifier: &Uuid,
+    ) -> impl std::future::Future<Output = Result<(), RepositoryError>> + Send;
 }
 
 impl UsersRepositoryExt for UsersRepository {
@@ -89,5 +94,15 @@ impl UsersRepositoryExt for UsersRepository {
             .fetch_optional(&self.pool)
             .await
             .map_err(RepositoryError::from)
+    }
+
+    async fn set_verified(&self, user_identifier: &Uuid) -> Result<(), RepositoryError> {
+        sqlx::query("UPDATE users SET is_verified = $1,  updated_at = NOW () WHERE identifier = $2")
+            .bind(true)
+            .bind(user_identifier)
+            .execute(&self.pool)
+            .await?;
+
+        Ok(())
     }
 }

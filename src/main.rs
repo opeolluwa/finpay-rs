@@ -19,11 +19,13 @@ async fn main() -> Result<(), AppError> {
         .compact()
         .init();
 
-    match EmailClient::new().test_connection() {
-        Ok(true) => tracing::info!("Connection established"),
-        Ok(false) => tracing::warn!("Connection test failed"),
-        Err(e) => tracing::error!("Error testing connection: {}", e),
-    };
+    tokio::task::spawn(async move {
+        match EmailClient::new().test_connection() {
+            Ok(true) => tracing::info!("Connection established"),
+            Ok(false) => tracing::warn!("Connection test failed"),
+            Err(e) => tracing::error!("Error testing connection: {}", e),
+        };
+    });
 
     let database_url = extract_env::<String>("DATABASE_URL")?;
     let pool = PgPoolOptions::new()

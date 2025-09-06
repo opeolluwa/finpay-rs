@@ -43,6 +43,11 @@ pub trait UsersServiceExt {
         &self,
         email: &str,
     ) -> impl std::future::Future<Output = Result<User, ServiceError>> + Send;
+
+    fn set_verified(
+        &self,
+        user_identifier: &Uuid,
+    ) -> impl std::future::Future<Output = Result<(), ServiceError>> + Send;
 }
 
 impl UsersServiceExt for UsersService {
@@ -70,5 +75,11 @@ impl UsersServiceExt for UsersService {
             .find_user_by_email(email)
             .await?
             .ok_or(ServiceError::RepositoryError(RecordNotFound))
+    }
+    async fn set_verified(&self, user_identifier: &Uuid) -> Result<(), ServiceError> {
+        self.repository
+            .set_verified(user_identifier)
+            .await
+            .map_err(ServiceError::from)
     }
 }
