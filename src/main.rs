@@ -1,6 +1,6 @@
 #![warn(unused_extern_crates)]
 
-use lib_finpay_rs::{router::load_routes, errors::AppError, utils::extract_env};
+use lib_finpay_rs::{errors::AppError, router::load_routes, utils::extract_env};
 
 use sqlx::migrate::Migrator;
 use sqlx::postgres::PgPoolOptions;

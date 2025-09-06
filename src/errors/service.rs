@@ -1,8 +1,7 @@
-use core::error;
-
 use axum::extract::rejection::{FormRejection, JsonRejection};
 use axum::response::Response;
 use axum::{http::StatusCode, response::IntoResponse};
+use core::error;
 use redis::RedisError;
 
 use crate::errors::{AppError, AuthenticationError, RepositoryError};

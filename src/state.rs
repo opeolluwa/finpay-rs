@@ -3,6 +3,7 @@ use std::sync::Arc;
 use axum::extract::FromRef;
 use sqlx::{Pool, Postgres};
 
+use crate::otp::service::OtpService;
 use crate::{authentication::service::AuthenticationService, users::service::UsersService};
 
 #[derive(Clone)]
@@ -24,10 +25,14 @@ impl FromRef<AppState> for AuthenticationService {
 }
 
 impl AppState {
-    pub fn init(pool: Arc<Pool<Postgres>>) -> Self {
-        let users_service = UsersService::init(pool);
+    pub fn new(pool: Arc<Pool<Postgres>>) -> Self {
+        let users_service = UsersService::new(&pool);
+        let otp_service = OtpService::new(&pool);
+        let authentication_service =
+            AuthenticationService::new(users_service.clone(), otp_service.clone());
+
         Self {
-            authentication_service: AuthenticationService::init(users_service.clone()),
+            authentication_service,
             users_service,
         }
     }

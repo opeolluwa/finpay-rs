@@ -401,16 +401,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "axum-valid"
-version = "0.24.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3881b4b05ede123ff3c82f41c63e47425443556365b47b2ba4d05098a5bd2645"
-dependencies = [
- "axum",
- "validator",
-]
-
-[[package]]
 name = "backon"
 version = "1.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -960,18 +950,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "37909eebbb50d72f9059c3b6d82c0463f2ff062c9e95845c43a6c9c0355411be"
 
 [[package]]
-name = "finapay_mailer"
-version = "0.1.0"
-dependencies = [
- "askama",
- "finpay_utils",
- "lettre",
- "log",
- "serde",
- "thiserror 2.0.16",
-]
-
-[[package]]
 name = "find-msvc-tools"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -985,12 +963,12 @@ dependencies = [
  "async-graphql-axum",
  "axum",
  "axum-extra",
- "axum-valid",
  "bcrypt",
  "chrono",
+ "finpay_mailer",
+ "finpay_utils",
  "jsonwebtoken",
  "log",
- "openssl",
  "redis",
  "serde",
  "serde_json",
@@ -1011,6 +989,18 @@ version = "0.1.0"
 [[package]]
 name = "finpay_kafka"
 version = "0.1.0"
+
+[[package]]
+name = "finpay_mailer"
+version = "0.1.0"
+dependencies = [
+ "askama",
+ "finpay_utils",
+ "lettre",
+ "log",
+ "serde",
+ "thiserror 2.0.16",
+]
 
 [[package]]
 name = "finpay_redis"
@@ -2014,15 +2004,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d05e27ee213611ffe7d6348b942e8f942b37114c00cc03cec254295a4a17852e"
 
 [[package]]
-name = "openssl-src"
-version = "300.5.2+3.5.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d270b79e2926f5150189d475bc7e9d2c69f9c4697b185fa917d5a32b792d21b4"
-dependencies = [
- "cc",
-]
-
-[[package]]
 name = "openssl-sys"
 version = "0.9.109"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2030,7 +2011,6 @@ checksum = "90096e2e47630d78b7d1c20952dc621f957103f8bc2c8359ec81290d75238571"
 dependencies = [
  "cc",
  "libc",
- "openssl-src",
  "pkg-config",
  "vcpkg",
 ]

@@ -6,7 +6,6 @@ use axum_extra::{
 
 use crate::{authentication::claims::Claims, errors::AuthenticationError};
 
-
 impl<S> FromRequestParts<S> for Claims
 where
     S: Send + Sync,

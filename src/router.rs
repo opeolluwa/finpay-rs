@@ -12,11 +12,11 @@ use sqlx::Pool;
 pub fn load_routes(pool: Arc<Pool<sqlx::Postgres>>) -> Router {
     let router = Router::new();
 
-    let state = AppState::init(pool);
+    let state = AppState::new(pool);
 
     router
-        .merge(users_router(state.clone()))
-        .nest("/auth", authentication_routers(state.clone()))
+        .merge(users_router(&state))
+        .nest("/auth", authentication_routers(&state))
         .route("/health", get(async move || "Healthy..."))
         .fallback(async || {
             ApiResponseBuilder::<EmptyResponseBody>::new()

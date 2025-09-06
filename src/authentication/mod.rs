@@ -1,6 +1,5 @@
 pub mod adapter;
-pub mod service;
+pub mod claims;
 pub mod handlers;
 pub mod router;
-pub mod claims;
-
+pub mod service;
