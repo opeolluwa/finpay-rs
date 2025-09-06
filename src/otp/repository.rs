@@ -60,7 +60,7 @@ impl OtpRepositoryExt for OtpRepository {
         user_identifier: &Uuid,
     ) -> Result<Option<Otp>, RepositoryError> {
         sqlx::query_as::<_, Otp>(
-            r#"SELECT * FROM one_time_passwords WHERE user_identifier = $1 ORDER BY created_at DESC LIMIT 1"#,
+            r#"SELECT * FROM one_time_passwords WHERE user_identifier = $1 ORDER BY created_date DESC LIMIT 1"#,
         ).bind(user_identifier)
             .fetch_optional(&self.pool)
             .await.map_err(RepositoryError::from)

@@ -8,6 +8,5 @@ pub struct Otp {
     pub identifier: Uuid,
     pub user_identifier: Uuid,
     pub token: String,
-    pub expiration: i64,
     pub created_date: DateTime<Local>,
 }

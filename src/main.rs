@@ -2,6 +2,7 @@
 
 use lib_finpay_rs::{errors::AppError, router::load_routes, utils::extract_env};
 
+use finpay_mailer::EmailClient;
 use sqlx::migrate::Migrator;
 use sqlx::postgres::PgPoolOptions;
 use std::{
@@ -18,6 +19,14 @@ async fn main() -> Result<(), AppError> {
         .compact()
         .init();
 
+    tokio::task::spawn(async move {
+        match EmailClient::new().test_connection() {
+            Ok(true) => tracing::info!("Connection established"),
+            Ok(false) => tracing::warn!("Connection test failed"),
+            Err(e) => tracing::error!("Error testing connection: {}", e),
+        };
+    });
+
     let database_url = extract_env::<String>("DATABASE_URL")?;
     let pool = PgPoolOptions::new()
         .max_connections(5)
@@ -29,6 +38,7 @@ async fn main() -> Result<(), AppError> {
     let migrator = Migrator::new(Path::new("migrations"))
         .await
         .map_err(|err| AppError::StartupError(err.to_string()))?;
+
     migrator
         .run(&pool)
         .await

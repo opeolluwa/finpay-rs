@@ -20,7 +20,22 @@ where
     fn default() -> Self {
         Self {
             to: String::new(),
-            from: String::from("admin@eckko.app"),
+            from: String::from("admin@finpay.app"),
+            subject: String::new(),
+            reply_to: None,
+            template: T::default(),
+        }
+    }
+}
+
+impl<T: Default> Default for EmailBuilder<T>
+where
+    T: Template + Send + Serialize + Default,
+{
+    fn default() -> Self {
+        Self {
+            to: String::new(),
+            from: String::from("admin@finpay.app"),
             subject: String::new(),
             reply_to: None,
             template: T::default(),
@@ -40,7 +55,7 @@ where
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Default)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct EmailBuilder<T>
 where
     T: Template + Send + Serialize + Default,

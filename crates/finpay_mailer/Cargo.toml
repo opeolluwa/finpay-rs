@@ -11,7 +11,8 @@ lettre = { version = "0.11.18", features = [
     "rustls",
     "rustls-platform-verifier",
     "tracing",
-    "mime03"
+    "mime03",
+    "smtp-transport"
 ] }
 log.workspace = true
 serde = { workspace = true, features = ["derive"] }
