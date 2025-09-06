@@ -7,8 +7,10 @@ use axum::{
 use serde::{Serialize, de::DeserializeOwned};
 use validator::Validate;
 
-use crate::{authentication::claims::Claims, errors::{AuthenticationError, ServiceError}};
-
+use crate::{
+    authentication::claims::Claims,
+    errors::{AuthenticationError, ServiceError},
+};
 
 pub struct AuthenticatedRequest<T>
 where
@@ -29,10 +31,9 @@ where
     async fn from_request(req: Request, state: &S) -> Result<Self, Self::Rejection> {
         let (parts, body) = req.into_parts();
 
-        let claims: Claims =
-            Claims::from_request_parts(&mut parts.clone(), state)
-                .await
-                .map_err(|_| AuthenticationError::MissingCredentials)?;
+        let claims: Claims = Claims::from_request_parts(&mut parts.clone(), state)
+            .await
+            .map_err(|_| AuthenticationError::MissingCredentials)?;
 
         let Json(data) = Json::<T>::from_request(Request::from_parts(parts, body), state)
             .await

@@ -1,11 +1,10 @@
 mod app;
 mod auth;
+mod extractor;
 mod repository;
 mod service;
-mod extractor;
-
 pub use app::AppError;
 pub use auth::AuthenticationError;
+pub use extractor::ExtractorError;
 pub use repository::RepositoryError;
 pub use service::ServiceError;
-pub use extractor::ExtractorError;

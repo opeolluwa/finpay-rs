@@ -1,6 +1,7 @@
 pub mod authentication;
 pub mod config;
 pub mod errors;
+pub mod otp;
 pub mod router;
 pub mod shared;
 pub mod state;

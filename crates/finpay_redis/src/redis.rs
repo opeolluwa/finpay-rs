@@ -4,8 +4,6 @@ use redis::{
 };
 use serde::Serialize;
 
-
-
 pub struct RedisClient {
     connection_manager: ConnectionManager,
 }

@@ -2,7 +2,6 @@ use axum::{http::StatusCode, response::IntoResponse};
 
 use crate::utils::{ApiResponseBuilder, EmptyResponseBody};
 
-
 #[derive(thiserror::Error, Debug)]
 pub enum AppError {
     #[error("App failed to start up due to {0}")]

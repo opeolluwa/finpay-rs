@@ -39,6 +39,8 @@ services:
       - POSTGRES_DB=${DATABASE_NAME}
     ports:
       - "6543:5432"
+    expose:
+      - '6543:5432'
     networks:
       - internal
     volumes:
@@ -78,17 +80,20 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-  # mailtutan: 
-  #   image: mailtutan/mailtutan:latest 
-  #   ports:
-  #     - 1080:1080
-  #     - 1025:1025 
-  #   environment:
-  #     - SMTP_AUTH_USERNAME=${SMTP_AUTH_USERNAME}
-  #     - SMTP_AUTH_PASSWORD=${SMTP_AUTH_PASSWORD}
-  #   platform: linux/amd64
-  #   networks:
-  #     - internal
+
+  maildev:
+     image: soulteary/maildev:latest
+     ports:
+       - "1080:1080"
+       - "1025:1025"
+     environment:
+       MAILDEV_SMTP_PORT: 1025
+       MAILDEV_WEB_PORT: 1080
+       MAILDEV_MAIL_DIRECTORY: "./emails"
+       MAILDEV_OUTGOING_USER: finpay
+       MAILDEV_OUTGOING_PASS: finpay
+     networks:
+       - internal
 
 volumes:
   cargo-target:

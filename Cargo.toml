@@ -3,10 +3,6 @@ name = "finpay-rs"
 version = "0.1.0"
 edition = "2024"
 
-[lib]
-name = "lib_finpay_rs"
-path = "src/lib.rs"
-
 [workspace]
 members = ["crates/*"]
 
@@ -18,6 +14,9 @@ redis = "0.32.4"
 serde = { version = "1.0.219", features = ["derive"] }
 thiserror = "2.0.12"
 
+[lib]
+name = "lib_finpay_rs"
+path = "src/lib.rs"
 
 [dependencies]
 async-graphql = "7.0.17"
@@ -31,9 +30,19 @@ axum = { version = "0.8.4", features = [
 axum-extra = { version = "0.10.1", features = ["typed-header"] }
 bcrypt = "0.17.0"
 chrono = { version = "0.4.41", features = ["serde"] }
+finpay_mailer = { version = "0.1.0", path = "crates/finpay_mailer" }
+finpay_utils = { version = "0.1.0", path = "crates/finpay_utils" }
 jsonwebtoken = "9.3.1"
 log = "0.4.27"
+redis = { version = "0.32.4", features = [
+    "aio",
+    "cluster",
+    "connection-manager",
+    "tokio-comp",
+    "uuid",
+] }
 serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.143"
 sqlx = { version = "0.8.6", features = [
     "runtime-tokio",
     "postgres",
@@ -49,15 +58,5 @@ tokio = { version = "1.47.1", features = ["full"] }
 tower-http = { version = "0.6.1", features = ["trace"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-validator = { version = "0.20.0", features = ["derive"] }
-openssl = { version = "0.10.73", features = ["vendored"] }
-redis = { version = "0.32.4", features = [
-    "aio",
-    "cluster",
-    "connection-manager",
-    "tokio-comp",
-    "uuid",
-] }
-serde_json = "1.0.143"
 uuid = { version = "1.18.1", features = ["serde", "v4", "v7", "v8"] }
-axum-valid = "0.24.0"
+validator = { version = "0.20.0", features = ["derive"] }

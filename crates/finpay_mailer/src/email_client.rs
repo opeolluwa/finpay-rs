@@ -14,13 +14,11 @@ pub struct EmailClient {
     mailer: SmtpTransport,
 }
 
-
-
 impl EmailClient {
     pub fn new() -> Self {
         let smtp_host: String = extract_env("SMTP_HOST")
             .unwrap_or_else(|_| panic!("SMTP_HOST environment variable not set"));
-        let _smtp_port: u16 = extract_env("SMTP_PORT")
+        let smtp_port: u16 = extract_env("SMTP_PORT")
             .unwrap_or_else(|_| panic!("SMTP_PORT environment variable not set"));
         let smtp_username: String = extract_env("SMTP_AUTH_USERNAME")
             .unwrap_or_else(|_| panic!("SMTP_AUTH_USERNAME environment variable not set"));
@@ -30,7 +28,7 @@ impl EmailClient {
         let creds = Credentials::new(smtp_username, smtp_password);
         let mailer = SmtpTransport::relay(&smtp_host)
             .expect("Failed to create SMTP relay")
-            // .port(smtp_port)
+            .port(smtp_port)
             .credentials(creds)
             .build();
 
@@ -69,10 +67,9 @@ impl EmailClient {
             .subject(subject)
             .multipart(
                 MultiPart::alternative()
-                    // This is composed of two parts.
                     .singlepart(
                         SinglePart::builder()
-                            .header(header::ContentType::TEXT_HTML)
+                            .header(header::ContentType::TEXT_PLAIN)
                             .body(email_content),
                     ),
             )

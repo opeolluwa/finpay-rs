@@ -4,19 +4,16 @@ use crate::users::adapters::CreateUserRequest;
 use crate::users::entities::User;
 use sqlx::Pool;
 use sqlx::Postgres;
-use std::sync::Arc;
 use uuid::Uuid;
 
 #[derive(Debug, Clone)]
 pub struct UsersRepository {
-    pool: Arc<Pool<Postgres>>,
+    pool: Pool<Postgres>,
 }
 
 impl UsersRepository {
     pub fn new(pool: &Pool<Postgres>) -> Self {
-        Self {
-            pool: Arc::new(pool.clone()),
-        }
+        Self { pool: pool.clone() }
     }
 }
 
@@ -73,7 +70,7 @@ impl UsersRepositoryExt for UsersRepository {
             .bind(&payload.phone_number)
             .bind(&payload.country_code)
             .bind(&payload.occupation)
-            .fetch_one(self.pool.as_ref())
+            .fetch_one(&self.pool)
             .await
             .map_err(RepositoryError::from)
     }
@@ -81,7 +78,7 @@ impl UsersRepositoryExt for UsersRepository {
     async fn find_user_by_pk(&self, identifier: &Uuid) -> Result<Option<User>, RepositoryError> {
         sqlx::query_as::<_, User>("SELECT * FROM users WHERE identifier = $1")
             .bind(&identifier)
-            .fetch_optional(self.pool.as_ref())
+            .fetch_optional(&self.pool)
             .await
             .map_err(RepositoryError::from)
     }
@@ -89,7 +86,7 @@ impl UsersRepositoryExt for UsersRepository {
     async fn find_user_by_email(&self, email: &str) -> Result<Option<User>, RepositoryError> {
         sqlx::query_as::<_, User>("SELECT * FROM users WHERE email = $1")
             .bind(&email)
-            .fetch_optional(self.pool.as_ref())
+            .fetch_optional(&self.pool)
             .await
             .map_err(RepositoryError::from)
     }

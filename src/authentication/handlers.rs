@@ -1,7 +1,10 @@
 use axum::extract::State;
 
 use crate::{
-    authentication::{adapter::CreateAccountRequest, service::{AuthenticationService, AuthenticationServiceExt}},
+    authentication::{
+        adapter::CreateAccountRequest,
+        service::{AuthenticationService, AuthenticationServiceExt},
+    },
     errors::ServiceError,
     shared::middlewares::validator::ValidatedRequest,
     users::{adapters::CreateUserRequest, entities::User},

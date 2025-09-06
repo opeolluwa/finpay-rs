@@ -20,7 +20,7 @@ pub struct UsersService {
 }
 
 impl UsersService {
-    pub fn init(pool: Arc<Pool<Postgres>>) -> Self {
+    pub fn new(pool: &Pool<Postgres>) -> Self {
         Self {
             repository: UsersRepository::new(&pool),
         }
