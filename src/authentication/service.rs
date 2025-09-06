@@ -42,7 +42,7 @@ impl AuthenticationService {
             .subject("Confirm your account")
             .to(user_email)
             .template(template)
-            .from("admin@eckko.oapp")
+            .from("admin@finpay.oapp")
             .build();
 
         let email_client = EmailClient::new();
@@ -65,7 +65,7 @@ impl AuthenticationService {
             .subject("Forgotten Password")
             .to(user_email)
             .template(template)
-            .from("admin@eckko.app")
+            .from("admin@finpay.app")
             .build();
         let email_client = EmailClient::new();
 

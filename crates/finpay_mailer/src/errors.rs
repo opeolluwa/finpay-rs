@@ -6,4 +6,6 @@ pub enum EmailError {
     TemplateError(String),
     #[error("Invalid email address: {0}")]
     InvalidEmail(String),
+    #[error(transparent)]
+    LettreError(#[from] lettre::error::Error),
 }

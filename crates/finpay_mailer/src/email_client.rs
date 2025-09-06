@@ -1,8 +1,8 @@
 use askama::Template;
 use lettre::{
-    SmtpTransport, Transport,
-    message::{Mailbox, MultiPart, SinglePart, header},
-    transport::smtp::authentication::Credentials,
+    message::{header, Mailbox, MultiPart, SinglePart}, transport::smtp::authentication::Credentials,
+    SmtpTransport,
+    Transport,
 };
 use serde::Serialize;
 
@@ -66,12 +66,11 @@ impl EmailClient {
             .to(to)
             .subject(subject)
             .multipart(
-                MultiPart::alternative()
-                    .singlepart(
-                        SinglePart::builder()
-                            .header(header::ContentType::TEXT_PLAIN)
-                            .body(email_content),
-                    ),
+                MultiPart::alternative().singlepart(
+                    SinglePart::builder()
+                        .header(header::ContentType::TEXT_HTML)
+                        .body(email_content),
+                ),
             )
             .map_err(|e| {
                 log::info!("failed to send email due to {e}");
@@ -83,6 +82,13 @@ impl EmailClient {
             EmailError::SendError(e.to_string())
         })?;
         Ok(())
+    }
+
+   pub fn test_connection(&self) -> Result<bool, EmailError> {
+        self.mailer.test_connection().map_err(|err| {
+            log::info!("failed to send email due to {err}");
+            EmailError::SendError(err.to_string())
+        })
     }
 }
 

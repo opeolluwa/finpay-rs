@@ -27,12 +27,12 @@ pub struct Claims {
 impl Default for Claims {
     fn default() -> Self {
         Self {
-            iss: "eckko.app".to_string(),
+            iss: "finpay.app".to_string(),
             sub: Default::default(),
             iat: Default::default(),
             exp: Default::default(),
             email: Default::default(),
-            aud: "eckko.mobile".to_string(),
+            aud: "finpay.mobile".to_string(),
             user_identifier: Default::default(),
         }
     }
@@ -239,7 +239,7 @@ impl Claims {
         let decoding_key = Keys::new(secret.as_bytes()).decoding;
 
         let mut jwt_validation = Validation::default();
-        jwt_validation.set_audience(&["eckko.mobile"]);
+        jwt_validation.set_audience(&["finpay.mobile"]);
 
         let token_data =
             decode::<Claims>(token, &decoding_key, &jwt_validation).map_err(|err| {

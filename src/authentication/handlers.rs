@@ -7,7 +7,7 @@ use crate::{
     },
     errors::ServiceError,
     shared::middlewares::validator::ValidatedRequest,
-    users::{adapters::CreateUserRequest, entities::User},
+    users::entities::User,
     utils::ApiResponse,
 };
 

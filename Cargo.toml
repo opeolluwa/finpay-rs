@@ -5,6 +5,7 @@ edition = "2024"
 
 [workspace]
 members = ["crates/*"]
+exclude = ["sandbox"]
 
 [workspace.dependencies]
 askama = "0.14.0"

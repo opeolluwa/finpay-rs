@@ -20,7 +20,7 @@ where
     fn default() -> Self {
         Self {
             to: String::new(),
-            from: String::from("admin@eckko.app"),
+            from: String::from("admin@finpay.app"),
             subject: String::new(),
             reply_to: None,
             template: T::default(),

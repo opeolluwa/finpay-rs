@@ -1,15 +1,11 @@
-use std::sync::Arc;
-
 use bcrypt::DEFAULT_COST;
 use sqlx::Pool;
 use sqlx::Postgres;
 use uuid::Uuid;
 
-use crate::errors::RepositoryError;
 use crate::errors::RepositoryError::RecordNotFound;
 use crate::errors::ServiceError;
 use crate::users::adapters::CreateUserRequest;
-use crate::users::adapters::LoginUserRequest;
 use crate::users::entities::User;
 use crate::users::repositories::UsersRepository;
 use crate::users::repositories::UsersRepositoryExt;
