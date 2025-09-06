@@ -1,7 +1,7 @@
+use crate::authentication::claims::Claims;
+use crate::users::{adapters::CreateUserRequest, enums::AccountType};
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationError};
-
-use crate::users::{adapters::CreateUserRequest, enums::AccountType};
 
 #[derive(Serialize, Deserialize, Debug, Validate)]
 #[serde(rename_all = "camelCase")]
@@ -60,6 +60,80 @@ impl Into<CreateUserRequest> for CreateAccountRequest {
             occupation: self.occupation,
         }
     }
+}
+
+#[derive(Debug, Serialize, Deserialize, Validate)]
+#[serde(rename_all = "camelCase")]
+pub struct LoginRequest {
+    #[validate(email(message = "email is required"))]
+    pub email: String,
+    #[validate(length(min = 1, message = "password cannot be empty"))]
+    pub password: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Validate)]
+#[serde(rename_all = "camelCase")]
+pub struct ForgottenPasswordRequest {
+    #[validate(email(message = "email is required"))]
+    pub email: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Validate)]
+#[serde(rename_all = "camelCase")]
+pub struct SetNewPasswordRequest {
+    #[validate(length(min = 1, message = "password cannot be empty"))]
+    pub password: String,
+    #[validate(must_match(other = "password", message = "password does  not match"))]
+    pub confirm_password: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Validate)]
+#[serde(rename_all = "camelCase")]
+pub struct VerifyAccountRequest {
+    #[validate(length(message = "otp is required", code = "otp", max = 6))]
+    pub otp: String,
+}
+
+pub type RefreshTokenRequest = Claims;
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CreateUserResponse {
+    pub token: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LoginResponse {
+    pub access_token: String,
+    pub refresh_token: String,
+    pub iat: i64,
+    pub exp: i64,
+    pub refresh_token_exp: i64,
+    pub refresh_token_iat: i64,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForgottenPasswordResponse {
+    pub token: String,
+}
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SetNewPasswordResponse {}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VerifyAccountResponse {}
+
+pub type RefreshTokenResponse = LoginResponse;
+
+#[derive(Debug, Serialize, Deserialize, Validate)]
+#[serde(rename_all = "camelCase")]
+pub struct ChangePasswordRequest {
+    pub current_password: String,
+    pub new_password: String,
+    pub confirm_password: String,
 }
 
 fn validate_account_type(account_type: &str) -> Result<(), ValidationError> {

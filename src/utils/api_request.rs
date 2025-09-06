@@ -16,7 +16,7 @@ pub struct AuthenticatedRequest<T>
 where
     T: Debug + Serialize + DeserializeOwned + Validate,
 {
-    pub data: T,
+    pub request: T,
     pub claims: Claims,
 }
 
@@ -35,12 +35,12 @@ where
             .await
             .map_err(|_| AuthenticationError::MissingCredentials)?;
 
-        let Json(data) = Json::<T>::from_request(Request::from_parts(parts, body), state)
+        let Json(request) = Json::<T>::from_request(Request::from_parts(parts, body), state)
             .await
             .map_err(ServiceError::from)?;
 
-        data.validate().map_err(ServiceError::from)?;
+        request.validate().map_err(ServiceError::from)?;
 
-        Ok(Self { data, claims })
+        Ok(Self { request, claims })
     }
 }
