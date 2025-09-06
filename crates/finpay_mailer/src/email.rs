@@ -28,7 +28,6 @@ where
     }
 }
 
-
 impl<T: Default> Default for EmailBuilder<T>
 where
     T: Template + Send + Serialize + Default,

@@ -36,7 +36,7 @@ async fn main() -> Result<(), AppError> {
     let migrator = Migrator::new(Path::new("migrations"))
         .await
         .map_err(|err| AppError::StartupError(err.to_string()))?;
-    
+
     migrator
         .run(&pool)
         .await

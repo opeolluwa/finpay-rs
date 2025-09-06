@@ -71,7 +71,4 @@ impl UsersServiceExt for UsersService {
             .await?
             .ok_or(ServiceError::RepositoryError(RecordNotFound))
     }
-    
-    
-    
 }
