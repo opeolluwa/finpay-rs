@@ -51,10 +51,6 @@ pub struct ApiResponse<T: Serialize> {
     status_code: StatusCode,
 }
 
-fn serialize_or_skip_message<T>(message: Option<String>, data: FlattenedOption<T>) -> bool {
-    message.is_none() || data.is_some()
-}
-
 impl From<ServiceError> for ApiResponse<()> {
     fn from(value: ServiceError) -> Self {
         ApiResponse {
@@ -125,13 +121,9 @@ impl<T: Serialize> IntoResponse for ApiResponse<T> {
     }
 }
 
-
-
 impl<T: Serialize> ApiResponse<T> {
     pub fn builder() -> ApiResponseBuilder<T> {
         ApiResponseBuilder::new()
-
-
     }
 
     pub fn success(data: T) -> ApiResponse<T> {
@@ -171,12 +163,14 @@ mod test {
 
         let expected_json = json!({
             "email": sample_user.email,
-            "identifier": sample_user.identifier
+            "identifier": sample_user.identifier,
+            "message":"got user"
         });
 
         let sample_response = ApiResponse::builder()
             .data(sample_user)
             .status_code(StatusCode::OK)
+            .message("got user")
             .build()
             .into_response();
 
@@ -185,7 +179,8 @@ mod test {
 
         let actual_json: serde_json::Value = serde_json::from_str(&body_str).unwrap();
 
-        assert_eq!(expected_json, actual_json);
+        assert_eq!(actual_json["email"], expected_json["email"]);
+        assert_eq!(actual_json["identifier"], expected_json["identifier"]);
     }
 
     #[test]

@@ -1,8 +1,11 @@
+use axum::debug_handler;
 use axum::{extract::State, http::StatusCode};
+use axum_extra::TypedHeader;
+use axum_extra::headers::UserAgent;
 
 use crate::authentication::adapter::{
-    ChangePasswordRequest, ForgottenPasswordRequest, LoginResponse, RefreshTokenResponse,
-    SetNewPasswordRequest, VerifyAccountRequest, VerifyAccountResponse,
+    ChangePasswordRequest, ForgottenPasswordRequest, ForgottenPasswordResponse, LoginResponse,
+    RefreshTokenResponse, SetNewPasswordRequest, VerifyAccountRequest, VerifyAccountResponse,
 };
 use crate::authentication::claims::Claims;
 use crate::utils::AuthenticatedRequest;
@@ -54,13 +57,23 @@ pub async fn login(
         .build())
 }
 
+#[debug_handler]
 pub async fn forgotten_password(
     State(authentication_service): State<AuthenticationService>,
+    user_agent: Option<TypedHeader<UserAgent>>,
     ValidatedRequest(request): ValidatedRequest<ForgottenPasswordRequest>,
-) -> Result<ApiResponse<ForgottenPasswordRequest>, ServiceError> {
-    let forgotten_password_response = authentication_service.forgotten_password(&request).await?;
+) -> Result<ApiResponse<ForgottenPasswordResponse>, ServiceError> {
+    let TypedHeader(user_agent) = user_agent.ok_or_else(|| ServiceError::BadRequest)?;
 
-    todo!()
+    println!(" the user agent {user_agent:#?}");
+    let forgotten_password_response = authentication_service
+        .forgotten_password(&request, &user_agent)
+        .await?;
+
+    Ok(ApiResponse::builder()
+        .data(forgotten_password_response)
+        .message("request processed successfully")
+        .build())
 }
 
 pub async fn set_new_password(
@@ -81,7 +94,9 @@ pub async fn request_refresh_token(
     State(authentication_service): State<AuthenticationService>,
     claims: Claims,
 ) -> Result<ApiResponse<RefreshTokenResponse>, ServiceError> {
-    let refresh_token_response = authentication_service.request_refresh_token(&claims).await?;
+    let refresh_token_response = authentication_service
+        .request_refresh_token(&claims)
+        .await?;
 
     Ok(ApiResponse::builder()
         .data(refresh_token_response)

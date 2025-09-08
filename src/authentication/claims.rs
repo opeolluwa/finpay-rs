@@ -1,12 +1,12 @@
 use std::fmt::Display;
 use std::time::Duration;
 
+use finpay_utils::extract_env;
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::errors::AuthenticationError;
-use crate::utils::extract_env;
 
 // Fixed duration constants (corrected from your original)
 pub const FIVE_MINUTES: Duration = Duration::from_secs(5 * 60);
@@ -187,7 +187,7 @@ impl Claims {
             ..Default::default()
         };
 
-        let secret = extract_env::<String>("JWT_SIGNING_KEY").map_err(AuthenticationError::from)?;
+        let secret = extract_env::<String>("JWT_SIGNING_KEY");
         let encoding_key = Keys::new(secret.as_bytes()).encoding;
 
         let token =
@@ -212,7 +212,7 @@ impl Claims {
             aud: self.aud.to_owned(),
         };
 
-        let secret = extract_env::<String>("JWT_SIGNING_KEY").map_err(AuthenticationError::from)?;
+        let secret = extract_env::<String>("JWT_SIGNING_KEY");
         let encoding_key = Keys::new(secret.as_bytes()).encoding;
 
         let token =
@@ -235,7 +235,7 @@ impl Claims {
     }
 
     pub fn from_token(token: &str) -> Result<Self, AuthenticationError> {
-        let secret = extract_env::<String>("JWT_SIGNING_KEY").map_err(AuthenticationError::from)?;
+        let secret = extract_env::<String>("JWT_SIGNING_KEY");
         let decoding_key = Keys::new(secret.as_bytes()).decoding;
 
         let mut jwt_validation = Validation::default();

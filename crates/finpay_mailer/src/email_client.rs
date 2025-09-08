@@ -8,31 +8,38 @@ use serde::Serialize;
 
 use finpay_utils::extract_env;
 
-use crate::{email::Email, errors::EmailError};
+use crate::{
+    ConfirmEmailTemplate, ForgottenPasswordTemplate, PasswordUpdatedTemplate, WelcomeTemplate,
+    email::Email, errors::EmailError,
+};
 
+#[derive(Debug, Clone)]
 pub struct EmailClient {
     mailer: SmtpTransport,
 }
 
 impl EmailClient {
     pub fn new() -> Self {
-        let smtp_host: String = extract_env("SMTP_HOST")
-            .unwrap_or_else(|_| panic!("SMTP_HOST environment variable not set"));
-        let smtp_port: u16 = extract_env("SMTP_PORT")
-            .unwrap_or_else(|_| panic!("SMTP_PORT environment variable not set"));
-        let smtp_username: String = extract_env("SMTP_AUTH_USERNAME")
-            .unwrap_or_else(|_| panic!("SMTP_AUTH_USERNAME environment variable not set"));
-        let smtp_password: String = extract_env("SMTP_AUTH_PASSWORD")
-            .unwrap_or_else(|_| panic!("SMTP_AUTH_PASSWORD environment variable not set"));
+        let smtp_host: String = extract_env("SMTP_HOST");
+        let smtp_port: u16 = extract_env("SMTP_PORT");
+        let smtp_username: String = extract_env("SMTP_AUTH_USERNAME");
+        let smtp_password: String = extract_env("SMTP_AUTH_PASSWORD");
+        let environment = extract_env::<String>("ENVIRONMENT");
 
-        let creds = Credentials::new(smtp_username, smtp_password);
-        let mailer = SmtpTransport::relay(&smtp_host)
-            .expect("Failed to create SMTP relay")
-            .port(smtp_port)
-            .credentials(creds)
-            .build();
-
-        EmailClient { mailer }
+        if environment == "prod" {
+            let creds = Credentials::new(smtp_username, smtp_password);
+            let mailer = SmtpTransport::relay(&smtp_host)
+                .expect("Failed to create SMTP relay")
+                .port(smtp_port)
+                .credentials(creds)
+                .build();
+            EmailClient { mailer }
+        } else {
+            let mailer = SmtpTransport::builder_dangerous("maildev")
+                .port(1025)
+                .build();
+            EmailClient { mailer }
+        }
     }
 
     pub fn send_email<T>(&self, email: &Email<T>) -> Result<(), EmailError>
@@ -93,20 +100,118 @@ impl EmailClient {
 }
 
 pub trait EmailClientExt {
-    fn send_confirmation_email(
+    fn send_account_confirmation_email(
         &self,
-        email: &Email<impl Template + Send + Serialize + Default>,
-    ) -> Result<(), EmailError>;
+        user_email: &str,
+        otp: &str,
+        first_name: &str,
+    ) -> impl std::future::Future<Output = Result<(), EmailError>> + Send;
+
+    fn send_forgotten_password_email(
+        &self,
+        user_email: &str,
+        otp: &str,
+    ) -> impl std::future::Future<Output = Result<(), EmailError>> + Send;
+
+    fn send_password_updated_email(
+        &self,
+        user_email: &str,
+        template: PasswordUpdatedTemplate,
+    ) -> impl std::future::Future<Output = Result<(), EmailError>> + Send;
+
+    fn send_welcome_email(
+        &self,
+        user_email: &str,
+        user_name: &str,
+    ) -> impl std::future::Future<Output = Result<(), EmailError>> + Send;
 }
 
 impl EmailClientExt for EmailClient {
-    fn send_confirmation_email(
+    async fn send_account_confirmation_email(
         &self,
-        email: &Email<impl Template + Send + Serialize + Default>,
+        user_email: &str,
+        otp: &str,
+        first_name: &str,
     ) -> Result<(), EmailError> {
-        self.send_email(email).map_err(|e| {
-            log::error!("Failed to send confirmation email: {e}");
-            e
-        })
+        let template = ConfirmEmailTemplate::new(user_email, otp, first_name);
+        let email = Email::builder()
+            .subject("Confirm your account")
+            .to(user_email)
+            .template(template)
+            .build();
+
+        let email_client = EmailClient::new();
+        email_client.send_email(&email).map_err(|err| {
+            log::error!("Failed to send confirmation email due to: {err}");
+            EmailError::SendError(err.to_string())
+        })?;
+
+        Ok(())
+    }
+
+    async fn send_forgotten_password_email(
+        &self,
+        user_email: &str,
+        otp: &str,
+    ) -> Result<(), EmailError> {
+        let template = ForgottenPasswordTemplate::new(otp, user_email);
+
+        let email = Email::builder()
+            .subject("Forgotten Password")
+            .to(user_email)
+            .template(template)
+            .from("admin@finpay.app")
+            .build();
+        let email_client = EmailClient::new();
+
+        email_client.send_email(&email).map_err(|err| {
+            log::error!("Failed to send forgotten password email due to: {err}");
+            EmailError::SendError(err.to_string())
+        })?;
+
+        Ok(())
+    }
+    async fn send_password_updated_email(
+        &self,
+        user_email: &str,
+        template: PasswordUpdatedTemplate,
+    ) -> Result<(), EmailError> {
+        let email = Email::builder()
+            .subject("Password Updated")
+            .to(user_email)
+            .template(template)
+            .build();
+        let email_client = EmailClient::new();
+        email_client.send_email(&email).map_err(|err| {
+            log::error!("Failed to send password updated email due to: {err}");
+            EmailError::SendError(err.to_string())
+        })?;
+
+        email_client.send_email(&email).map_err(|err| {
+            log::error!("Failed to send password updated email due to: {err}");
+            EmailError::SendError(err.to_string())
+        })?;
+
+        Ok(())
+    }
+
+    async fn send_welcome_email(
+        &self,
+        user_email: &str,
+        user_name: &str,
+    ) -> Result<(), EmailError> {
+        let template = WelcomeTemplate::new(user_name);
+        let email = Email::builder()
+            .subject("Welcome to Finpay!")
+            .to(user_email)
+            .template(template)
+            .build();
+        let email_client = EmailClient::new();
+        email_client.send_email(&email).map_err(|err| {
+            log::error!("Failed to send welcome email due to: {err}");
+            EmailError::SendError(err.to_string())
+        })?;
+
+        Ok(())
     }
 }

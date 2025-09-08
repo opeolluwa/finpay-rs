@@ -1,11 +1,10 @@
+use std::time::Duration;
+
+use axum_extra::headers::UserAgent;
 use bcrypt::hash;
-use bcrypt::{verify, DEFAULT_COST};
-use finpay_mailer::ConfirmEmailTemplate;
-use finpay_mailer::Email;
-use finpay_mailer::EmailClient;
-use finpay_mailer::ForgottenPasswordTemplate;
-use finpay_mailer::PasswordUpdatedTemplate;
-use finpay_mailer::WelcomeTemplate;
+use bcrypt::{DEFAULT_COST, verify};
+use finpay_mailer::{EmailClient, EmailClientExt};
+use finpay_redis::{RedisClient, RedisClientExt};
 use uuid::Uuid;
 
 use crate::authentication::adapter::CreateUserResponse;
@@ -22,12 +21,12 @@ use crate::otp::service::{OtpService, OtpServiceExt};
 use crate::{
     errors::ServiceError,
     users::{
-        adapters::{CreateUserRequest, LoginUserRequest},
-        entities::User,
+        adapters::CreateUserRequest,
         service::{UsersService, UsersServiceExt},
     },
 };
 
+use crate::errors::AuthenticationError::WrongCredentials;
 #[derive(Clone)]
 pub struct AuthenticationService {
     user_service: UsersService,
@@ -40,94 +39,6 @@ impl AuthenticationService {
             user_service,
             otp_service,
         }
-    }
-
-    async fn send_account_confirmation_email(
-        &self,
-        user_email: &str,
-        otp: &str,
-        first_name: &str,
-    ) -> Result<(), ServiceError> {
-        let template = ConfirmEmailTemplate::new(user_email, otp, first_name);
-        let email = Email::builder()
-            .subject("Confirm your account")
-            .to(user_email)
-            .template(template)
-            .build();
-
-        let email_client = EmailClient::new();
-        email_client.send_email(&email).map_err(|err| {
-            log::error!("Failed to send confirmation email due to: {err}");
-            ServiceError::OperationFailed
-        })?;
-
-        Ok(())
-    }
-
-    async fn send_forgotten_password_email(
-        &self,
-        user_email: &str,
-        otp: &str,
-    ) -> Result<(), ServiceError> {
-        let template = ForgottenPasswordTemplate::new(otp, user_email);
-
-        let email = Email::builder()
-            .subject("Forgotten Password")
-            .to(user_email)
-            .template(template)
-            .from("admin@finpay.app")
-            .build();
-        let email_client = EmailClient::new();
-
-        email_client.send_email(&email).map_err(|err| {
-            log::error!("Failed to send forgotten password email due to: {err}");
-            ServiceError::OperationFailed
-        })?;
-
-        Ok(())
-    }
-    async fn send_password_updated_email(
-        &self,
-        user_email: &str,
-        template: PasswordUpdatedTemplate,
-    ) -> Result<(), ServiceError> {
-        let email = Email::builder()
-            .subject("Password Updated")
-            .to(user_email)
-            .template(template)
-            .build();
-        let email_client = EmailClient::new();
-        email_client.send_email(&email).map_err(|err| {
-            log::error!("Failed to send password updated email due to: {err}");
-            ServiceError::OperationFailed
-        })?;
-
-        email_client.send_email(&email).map_err(|err| {
-            log::error!("Failed to send password updated email due to: {err}");
-            ServiceError::OperationFailed
-        })?;
-
-        Ok(())
-    }
-
-    async fn send_welcome_email(
-        &self,
-        user_email: &str,
-        user_name: &str,
-    ) -> Result<(), ServiceError> {
-        let template = WelcomeTemplate::new(user_name);
-        let email = Email::builder()
-            .subject("Welcome to Finpay!")
-            .to(user_email)
-            .template(template)
-            .build();
-        let email_client = EmailClient::new();
-        email_client.send_email(&email).map_err(|err| {
-            log::error!("Failed to send welcome email due to: {err}");
-            ServiceError::OperationFailed
-        })?;
-
-        Ok(())
     }
 
     fn hash_password(&self, raw_password: &str) -> Result<String, ServiceError> {
@@ -158,6 +69,7 @@ pub trait AuthenticationServiceExt {
     fn forgotten_password(
         &self,
         request: &ForgottenPasswordRequest,
+        user_agent: &UserAgent,
     ) -> impl std::future::Future<Output = Result<ForgottenPasswordResponse, ServiceError>> + Send;
 
     fn set_new_password(
@@ -216,7 +128,7 @@ impl AuthenticationServiceExt for AuthenticationService {
         {
             return Err(ServiceError::RepositoryError(DuplicateRecord));
         }
-        let user_identifier = self.user_service.create_account(&payload).await?;
+        let user_identifier = self.user_service.create_account(payload).await?;
 
         let user = self.user_service.find_user_by_pk(&user_identifier).await?;
 
@@ -231,10 +143,8 @@ impl AuthenticationServiceExt for AuthenticationService {
         let first_name = user.first_name.clone();
         let email = user.email.clone();
 
-        let service = self.clone();
-
         tokio::task::spawn(async move {
-            if let Err(error) = service
+            if let Err(error) = EmailClient::new()
                 .send_account_confirmation_email(&email, &otp, &first_name)
                 .await
             {
@@ -250,7 +160,8 @@ impl AuthenticationServiceExt for AuthenticationService {
         claims: &Claims,
         request: &VerifyAccountRequest,
     ) -> Result<VerifyAccountResponse, ServiceError> {
-        self.user_service
+        let user = self
+            .user_service
             .find_user_by_pk(&claims.user_identifier)
             .await?;
 
@@ -266,14 +177,56 @@ impl AuthenticationServiceExt for AuthenticationService {
         self.user_service
             .set_verified(&claims.user_identifier)
             .await?;
-        
+
+        let email_client = EmailClient::new();
+        let user_email = user.email.clone();
+        let user_name = user.first_name.clone();
+
+        tokio::spawn(async move {
+            if let Err(err) = email_client
+                .send_welcome_email(&user_email, &user_name)
+                .await
+            {
+                tracing::error!("Failed to send welcome email to {}: {}", user_email, err);
+            }
+        });
+
         Ok(VerifyAccountResponse {})
     }
 
     async fn login(&self, request: &LoginRequest) -> Result<LoginResponse, ServiceError> {
         let user = self.user_service.find_user_by_email(&request.email).await?;
 
-        todo!()
+        let is_valid_password = self.validate_password(&request.password, &user.password)?;
+        if !is_valid_password {
+            return Err(ServiceError::AuthenticationError(WrongCredentials));
+        }
+        let access_token = Claims::builder()
+            .subject("access_token")
+            .email(&user.email)
+            .user_identifier(&user.identifier)
+            .validity(Duration::from_secs(15 * 60 /*15 minutes */))
+            .build()?;
+
+        let refresh_token = Claims::builder()
+            .subject("refresh_token")
+            .email(&user.email)
+            .user_identifier(&user.identifier)
+            .validity(Duration::from_secs(7 * 60 * 60 /*7 hours */))
+            .build()?;
+
+        let refresh_token_out = refresh_token.generate_token()?;
+        let mut redis_client = RedisClient::new().await?;
+        redis_client.save_refresh_token(&refresh_token_out).await?;
+
+        Ok(LoginResponse {
+            access_token: access_token.generate_token()?,
+            refresh_token: refresh_token_out,
+            refresh_token_exp: refresh_token.exp,
+            iat: access_token.iat,
+            exp: access_token.exp,
+            refresh_token_iat: refresh_token.iat,
+        })
     }
 
     async fn change_password(
@@ -287,8 +240,31 @@ impl AuthenticationServiceExt for AuthenticationService {
     async fn forgotten_password(
         &self,
         request: &ForgottenPasswordRequest,
+        user_agent: &UserAgent,
     ) -> Result<ForgottenPasswordResponse, ServiceError> {
-        todo!()
+        let user = self.user_service.find_user_by_email(&request.email).await?;
+
+        let token = Claims::builder()
+            .email(&user.email)
+            .user_identifier(&user.identifier)
+            .validity(TWENTY_FIVE_MINUTES)
+            .build()?
+            .generate_token()?;
+
+        let otp = self.otp_service.new_otp_for_user(&user.identifier).await?;
+        let first_name = user.first_name.clone();
+        let email = user.email.clone();
+
+        tokio::task::spawn(async move {
+            if let Err(error) = EmailClient::new()
+                .send_account_confirmation_email(&email, &otp, &first_name)
+                .await
+            {
+                log::error!("Failed to send account password reset email: {error}");
+            }
+        });
+
+        Ok(ForgottenPasswordResponse { token })
     }
 
     async fn request_refresh_token(

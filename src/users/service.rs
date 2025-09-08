@@ -18,7 +18,7 @@ pub struct UsersService {
 impl UsersService {
     pub fn new(pool: &Pool<Postgres>) -> Self {
         Self {
-            repository: UsersRepository::new(&pool),
+            repository: UsersRepository::new(pool),
         }
     }
     fn hash_password(&self, password: &str) -> Result<String, ServiceError> {

@@ -82,7 +82,7 @@ impl UsersRepositoryExt for UsersRepository {
 
     async fn find_user_by_pk(&self, identifier: &Uuid) -> Result<Option<User>, RepositoryError> {
         sqlx::query_as::<_, User>("SELECT * FROM users WHERE identifier = $1")
-            .bind(&identifier)
+            .bind(identifier)
             .fetch_optional(&self.pool)
             .await
             .map_err(RepositoryError::from)
@@ -90,7 +90,7 @@ impl UsersRepositoryExt for UsersRepository {
 
     async fn find_user_by_email(&self, email: &str) -> Result<Option<User>, RepositoryError> {
         sqlx::query_as::<_, User>("SELECT * FROM users WHERE email = $1")
-            .bind(&email)
+            .bind(email)
             .fetch_optional(&self.pool)
             .await
             .map_err(RepositoryError::from)
