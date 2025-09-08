@@ -32,6 +32,7 @@ axum-extra = { version = "0.10.1", features = ["typed-header"] }
 bcrypt = "0.17.0"
 chrono = { version = "0.4.41", features = ["serde"] }
 finpay_mailer = { version = "0.1.0", path = "crates/finpay_mailer" }
+finpay_redis = { version = "0.1.0", path = "crates/finpay_redis" }
 finpay_utils = { version = "0.1.0", path = "crates/finpay_utils" }
 jsonwebtoken = "9.3.1"
 log = "0.4.27"

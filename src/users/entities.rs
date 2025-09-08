@@ -21,4 +21,6 @@ pub struct User {
     pub created_date: DateTime<Local>,
     pub updated_at: Option<DateTime<Local>>,
     pub is_verified: bool,
+    #[serde(skip)]
+    pub password: String,
 }

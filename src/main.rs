@@ -1,6 +1,7 @@
 #![warn(unused_extern_crates)]
 
-use lib_finpay_rs::{errors::AppError, router::load_routes, utils::extract_env};
+use finpay_utils::extract_env;
+use lib_finpay_rs::{errors::AppError, router::load_routes};
 
 use finpay_mailer::EmailClient;
 use sqlx::migrate::Migrator;
@@ -27,7 +28,7 @@ async fn main() -> Result<(), AppError> {
         };
     });
 
-    let database_url = extract_env::<String>("DATABASE_URL")?;
+    let database_url = extract_env::<String>("DATABASE_URL");
     let pool = PgPoolOptions::new()
         .max_connections(5)
         .connect(&database_url)
@@ -45,7 +46,7 @@ async fn main() -> Result<(), AppError> {
         .map_err(|err| AppError::StartupError(err.to_string()))?;
 
     let app = load_routes(Arc::new(pool));
-    let port = extract_env::<u16>("PORT")?;
+    let port = extract_env::<u16>("PORT");
     let ip_address = SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::UNSPECIFIED, port));
     tracing::info!("Application listening on http://{}", ip_address);
 

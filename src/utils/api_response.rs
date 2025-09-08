@@ -51,10 +51,6 @@ pub struct ApiResponse<T: Serialize> {
     status_code: StatusCode,
 }
 
-fn serialize_or_skip_message<T>(message: Option<String>, data: FlattenedOption<T>) -> bool {
-    message.is_none() || data.is_some()
-}
-
 impl From<ServiceError> for ApiResponse<()> {
     fn from(value: ServiceError) -> Self {
         ApiResponse {
@@ -125,13 +121,9 @@ impl<T: Serialize> IntoResponse for ApiResponse<T> {
     }
 }
 
-
-
 impl<T: Serialize> ApiResponse<T> {
     pub fn builder() -> ApiResponseBuilder<T> {
         ApiResponseBuilder::new()
-
-
     }
 
     pub fn success(data: T) -> ApiResponse<T> {
