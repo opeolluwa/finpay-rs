@@ -128,7 +128,7 @@ impl AuthenticationServiceExt for AuthenticationService {
         {
             return Err(ServiceError::RepositoryError(DuplicateRecord));
         }
-        let user_identifier = self.user_service.create_account(&payload).await?;
+        let user_identifier = self.user_service.create_account(payload).await?;
 
         let user = self.user_service.find_user_by_pk(&user_identifier).await?;
 

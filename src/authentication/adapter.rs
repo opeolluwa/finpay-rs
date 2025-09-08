@@ -45,19 +45,19 @@ pub struct CreateAccountRequest {
     pub occupation: Option<String>,
 }
 
-impl Into<CreateUserRequest> for CreateAccountRequest {
-    fn into(self) -> CreateUserRequest {
+impl From<CreateAccountRequest> for CreateUserRequest {
+    fn from(val: CreateAccountRequest) -> Self {
         CreateUserRequest {
-            first_name: self.first_name,
-            last_name: self.last_name,
-            email: self.email,
-            password: self.password,
-            account_type: self.account_type.into(),
-            country: self.country,
-            country_code: self.country_code,
-            address: self.address,
-            phone_number: self.phone_number,
-            occupation: self.occupation,
+            first_name: val.first_name,
+            last_name: val.last_name,
+            email: val.email,
+            password: val.password,
+            account_type: val.account_type.into(),
+            country: val.country,
+            country_code: val.country_code,
+            address: val.address,
+            phone_number: val.phone_number,
+            occupation: val.occupation,
         }
     }
 }

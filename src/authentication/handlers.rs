@@ -65,7 +65,7 @@ pub async fn forgotten_password(
 ) -> Result<ApiResponse<ForgottenPasswordResponse>, ServiceError> {
     let TypedHeader(user_agent) = user_agent.ok_or_else(|| ServiceError::BadRequest)?;
 
-    println!(" the user agent {:#?}", user_agent);
+    println!(" the user agent {user_agent:#?}");
     let forgotten_password_response = authentication_service
         .forgotten_password(&request, &user_agent)
         .await?;
