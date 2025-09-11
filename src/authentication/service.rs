@@ -1,23 +1,29 @@
+use std::path::Path;
 use std::time::Duration;
 
 use axum_extra::headers::UserAgent;
+use axum_typed_multipart::TypedMultipart;
 use bcrypt::hash;
 use bcrypt::{DEFAULT_COST, verify};
+use finpay_imagekit::ImagekitClient;
 use finpay_mailer::{EmailClient, EmailClientExt};
 use finpay_redis::{RedisClient, RedisClientExt};
+use finpay_utils::{extract_env, generate_file_name};
 use uuid::Uuid;
 
-use crate::authentication::adapter::CreateUserResponse;
-use crate::authentication::adapter::LoginRequest;
+use crate::authentication::adapter::{CreateUserResponse, VerifyResetOtpResponse};
 use crate::authentication::adapter::{
-    ChangePasswordRequest, ForgottenPasswordRequest, ForgottenPasswordResponse, LoginResponse,
-    RefreshTokenRequest, RefreshTokenResponse, SetNewPasswordRequest, SetNewPasswordResponse,
-    VerifyAccountRequest, VerifyAccountResponse,
+    ForgottenPasswordRequest, ForgottenPasswordResponse, LoginResponse, RefreshTokenRequest,
+    RefreshTokenResponse, SetNewPasswordRequest, SetNewPasswordResponse, VerifyAccountResponse,
+    VerifyOtpRequest,
 };
+use crate::authentication::adapter::{LoginRequest, UploadProfilePictureRequest};
 use crate::authentication::claims::{Claims, TWENTY_FIVE_MINUTES};
+use crate::config::AppConfig;
 use crate::errors::AuthenticationError::InvalidOtp;
 use crate::errors::RepositoryError::DuplicateRecord;
 use crate::otp::service::{OtpService, OtpServiceExt};
+use crate::users::entities::User;
 use crate::{
     errors::ServiceError,
     users::{
@@ -81,14 +87,14 @@ pub trait AuthenticationServiceExt {
     fn verify_account(
         &self,
         claims: &Claims,
-        request: &VerifyAccountRequest,
+        request: &VerifyOtpRequest,
     ) -> impl std::future::Future<Output = Result<VerifyAccountResponse, ServiceError>> + Send;
 
     fn validate_otp(
         &self,
         claims: &Claims,
-        request: &VerifyAccountRequest,
-    ) -> impl std::future::Future<Output = Result<String, ServiceError>> + Send;
+        otp: &str,
+    ) -> impl std::future::Future<Output = Result<User, ServiceError>> + Send;
 
     fn request_refresh_token(
         &self,
@@ -97,21 +103,15 @@ pub trait AuthenticationServiceExt {
 
     fn set_avatar_url(
         &self,
+        request: TypedMultipart<UploadProfilePictureRequest>,
         user_identifier: &Uuid,
-        avatar_url: &str,
     ) -> impl std::future::Future<Output = Result<(), ServiceError>> + Send;
 
     fn verify_reset_otp(
         &self,
         claims: &Claims,
-        request: &VerifyAccountRequest,
-    ) -> impl std::future::Future<Output = Result<VerifyAccountResponse, ServiceError>> + Send;
-
-    fn change_password(
-        &self,
-        request: &ChangePasswordRequest,
-        claims: &Claims,
-    ) -> impl std::future::Future<Output = Result<(), ServiceError>> + Send;
+        request: &VerifyOtpRequest,
+    ) -> impl std::future::Future<Output = Result<VerifyResetOtpResponse, ServiceError>> + Send;
 }
 
 impl AuthenticationServiceExt for AuthenticationService {
@@ -155,45 +155,6 @@ impl AuthenticationServiceExt for AuthenticationService {
         Ok(CreateUserResponse { token })
     }
 
-    async fn verify_account(
-        &self,
-        claims: &Claims,
-        request: &VerifyAccountRequest,
-    ) -> Result<VerifyAccountResponse, ServiceError> {
-        let user = self
-            .user_service
-            .find_user_by_pk(&claims.user_identifier)
-            .await?;
-
-        let is_valid_otp = self
-            .otp_service
-            .validate_otp_for_user(&claims.user_identifier, &request.otp)
-            .await?;
-
-        if !is_valid_otp {
-            return Err(ServiceError::AuthenticationError(InvalidOtp));
-        }
-
-        self.user_service
-            .set_verified(&claims.user_identifier)
-            .await?;
-
-        let email_client = EmailClient::new();
-        let user_email = user.email.clone();
-        let user_name = user.first_name.clone();
-
-        tokio::spawn(async move {
-            if let Err(err) = email_client
-                .send_welcome_email(&user_email, &user_name)
-                .await
-            {
-                tracing::error!("Failed to send welcome email to {}: {}", user_email, err);
-            }
-        });
-
-        Ok(VerifyAccountResponse {})
-    }
-
     async fn login(&self, request: &LoginRequest) -> Result<LoginResponse, ServiceError> {
         let user = self.user_service.find_user_by_email(&request.email).await?;
 
@@ -229,18 +190,10 @@ impl AuthenticationServiceExt for AuthenticationService {
         })
     }
 
-    async fn change_password(
-        &self,
-        request: &ChangePasswordRequest,
-        claims: &Claims,
-    ) -> Result<(), ServiceError> {
-        todo!()
-    }
-
     async fn forgotten_password(
         &self,
         request: &ForgottenPasswordRequest,
-        user_agent: &UserAgent,
+        _user_agent: &UserAgent, //TODO: add user agen tto message
     ) -> Result<ForgottenPasswordResponse, ServiceError> {
         let user = self.user_service.find_user_by_email(&request.email).await?;
 
@@ -257,7 +210,7 @@ impl AuthenticationServiceExt for AuthenticationService {
 
         tokio::task::spawn(async move {
             if let Err(error) = EmailClient::new()
-                .send_account_confirmation_email(&email, &otp, &first_name)
+                .send_forgotten_password_email(&email, &otp, &first_name)
                 .await
             {
                 log::error!("Failed to send account password reset email: {error}");
@@ -267,42 +220,159 @@ impl AuthenticationServiceExt for AuthenticationService {
         Ok(ForgottenPasswordResponse { token })
     }
 
+    async fn set_new_password(
+        &self,
+        request: &SetNewPasswordRequest,
+        claims: &Claims,
+    ) -> Result<SetNewPasswordResponse, ServiceError> {
+        let hash = self.hash_password(&request.password)?;
+        self.user_service
+            .set_password(&claims.user_identifier, &hash)
+            .await?;
+
+        Ok(SetNewPasswordResponse {})
+    }
+
+    async fn verify_account(
+        &self,
+        claims: &Claims,
+        request: &VerifyOtpRequest,
+    ) -> Result<VerifyAccountResponse, ServiceError> {
+        let user = self
+            .user_service
+            .find_user_by_pk(&claims.user_identifier)
+            .await?;
+
+        let is_valid_otp = self
+            .otp_service
+            .validate_otp_for_user(&claims.user_identifier, &request.otp)
+            .await?;
+
+        if !is_valid_otp {
+            return Err(ServiceError::AuthenticationError(InvalidOtp));
+        }
+
+        self.user_service
+            .set_verified(&claims.user_identifier)
+            .await?;
+
+        let email_client = EmailClient::new();
+        let user_email = user.email.clone();
+        let user_name = user.first_name.clone();
+
+        tokio::spawn(async move {
+            if let Err(err) = email_client
+                .send_welcome_email(&user_email, &user_name)
+                .await
+            {
+                tracing::error!("Failed to send welcome email to {}: {}", user_email, err);
+            }
+        });
+
+        Ok(VerifyAccountResponse {})
+    }
+
+    async fn validate_otp(&self, claims: &Claims, otp: &str) -> Result<User, ServiceError> {
+        let user = self
+            .user_service
+            .find_user_by_pk(&claims.user_identifier)
+            .await?;
+
+        let is_valid_otp = self
+            .otp_service
+            .validate_otp_for_user(&claims.user_identifier, &otp)
+            .await?;
+
+        if !is_valid_otp {
+            return Err(ServiceError::AuthenticationError(InvalidOtp));
+        }
+
+        Ok(user)
+    }
+
+    //TODO:
     async fn request_refresh_token(
         &self,
-        request: &RefreshTokenRequest,
+        _request: &RefreshTokenRequest,
     ) -> Result<RefreshTokenResponse, ServiceError> {
         todo!()
     }
 
     async fn set_avatar_url(
         &self,
+        TypedMultipart(UploadProfilePictureRequest { image }): TypedMultipart<
+            UploadProfilePictureRequest,
+        >,
         user_identifier: &Uuid,
-        avatar_url: &str,
     ) -> Result<(), ServiceError> {
-        todo!()
-    }
+        let file_name = image
+            .metadata
+            .file_name
+            .clone()
+            .unwrap_or(generate_file_name());
 
-    async fn set_new_password(
-        &self,
-        request: &SetNewPasswordRequest,
-        claims: &Claims,
-    ) -> Result<SetNewPasswordResponse, ServiceError> {
-        todo!()
-    }
+        let config = AppConfig::from_env()?;
+        let temp_dir = Path::new(&config.upload_path);
+        let file_path = temp_dir.join(format!(
+            "{time_stamp}_{file_name}",
+            time_stamp = chrono::Local::now().timestamp()
+        ));
 
-    async fn validate_otp(
-        &self,
-        claims: &Claims,
-        request: &VerifyAccountRequest,
-    ) -> Result<String, ServiceError> {
-        todo!()
+        // create file object
+        if let Err(err) = image.contents.persist(&file_path) {
+            log::error!("error processing file due to {err}");
+            return Err(ServiceError::OperationFailed);
+        }
+
+        let private_key = extract_env::<String>("IMAGEKIT_PRIVATE_KEY");
+        let public_key = extract_env::<String>("IMAGEKIT_PUBLIC_KEY");
+
+        let imagekit_upload_response = ImagekitClient::new(&public_key, &private_key)
+            .map_err(|err| {
+                log::error!("error creating client due to {err}");
+                ServiceError::OperationFailed
+            })?
+            .upload_file(&file_path, &file_name)
+            .await
+            .map_err(|err| {
+                log::error!("error creating client due to {err}");
+                ServiceError::OperationFailed
+            })?;
+
+        let avatar_url = imagekit_upload_response.url;
+        self.user_service
+            .set_avatar_url(user_identifier, &avatar_url)
+            .await?;
+
+        Ok(())
     }
 
     async fn verify_reset_otp(
         &self,
         claims: &Claims,
-        request: &VerifyAccountRequest,
-    ) -> Result<VerifyAccountResponse, ServiceError> {
-        todo!()
+        request: &VerifyOtpRequest,
+    ) -> Result<VerifyResetOtpResponse, ServiceError> {
+        let user = self
+            .user_service
+            .find_user_by_pk(&claims.user_identifier)
+            .await?;
+
+        let is_valid_otp = self
+            .otp_service
+            .validate_otp_for_user(&claims.user_identifier, &request.otp)
+            .await?;
+
+        if !is_valid_otp {
+            return Err(ServiceError::AuthenticationError(InvalidOtp));
+        }
+
+        let token = Claims::builder()
+            .email(&user.email)
+            .user_identifier(&user.identifier)
+            .validity(TWENTY_FIVE_MINUTES)
+            .build()?
+            .generate_token()?;
+
+        Ok(VerifyResetOtpResponse { token })
     }
 }
