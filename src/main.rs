@@ -1,61 +1,58 @@
 #![warn(unused_extern_crates)]
 
-use finpay_utils::extract_env;
-use lib_finpay_rs::{errors::AppError, router::load_routes};
+use axum::extract::DefaultBodyLimit;
+use lib_finpay_rs::{
+    config::{
+        AppConfig,
+        app::{create_cors_layer, shutdown_signal},
+        database::AppDatabase,
+        filesystem::AppFileSystem,
+        logger::AppLogger,
+        tasks::AppBackgroundTasks,
+    },
+    errors::AppError,
+    router::load_routes,
+};
 
-use finpay_mailer::EmailClient;
-use sqlx::migrate::Migrator;
-use sqlx::postgres::PgPoolOptions;
 use std::{
     net::{Ipv4Addr, SocketAddr, SocketAddrV4},
-    path::Path,
-    sync::Arc,
+    time::Duration,
 };
+use tower_http::{limit::RequestBodyLimitLayer, timeout::TimeoutLayer};
 
 #[tokio::main]
 async fn main() -> Result<(), AppError> {
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::DEBUG)
-        .with_target(false)
-        .compact()
-        .init();
+    AppLogger::init();
+    tracing::info!("Logger initialized");
 
-    tokio::task::spawn(async move {
-        match EmailClient::new().test_connection() {
-            Ok(true) => tracing::info!("Connection established"),
-            Ok(false) => tracing::warn!("Connection test failed"),
-            Err(e) => tracing::error!("Error testing connection: {}", e),
-        };
-    });
+    let config = AppConfig::from_env()?;
+    AppFileSystem::init(&config)?;
+    tracing::info!("App Config loaded!");
 
-    let database_url = extract_env::<String>("DATABASE_URL");
-    let pool = PgPoolOptions::new()
-        .max_connections(5)
-        .connect(&database_url)
-        .await
-        .map_err(|err| AppError::StartupError(err.to_string()))?;
-    tracing::info!("Database initialized");
+    let db_pool = AppDatabase::init(&config).await?;
+    let shared_db_pool = std::sync::Arc::new(db_pool);
 
-    let migrator = Migrator::new(Path::new("migrations"))
-        .await
-        .map_err(|err| AppError::StartupError(err.to_string()))?;
+    AppBackgroundTasks::run();
+    tracing::info!("Background tasks initialized");
 
-    migrator
-        .run(&pool)
-        .await
-        .map_err(|err| AppError::StartupError(err.to_string()))?;
+    let body_limit_bytes = config.body_limit_mb * 1024 * 1024;
 
-    let app = load_routes(Arc::new(pool));
-    let port = extract_env::<u16>("PORT");
-    let ip_address = SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::UNSPECIFIED, port));
-    tracing::info!("Application listening on http://{}", ip_address);
+    let app = load_routes(shared_db_pool)
+        .layer(DefaultBodyLimit::disable())
+        .layer(RequestBodyLimitLayer::new(body_limit_bytes))
+        .layer(TimeoutLayer::new(Duration::from_secs(10)))
+        .layer(tower_http::trace::TraceLayer::new_for_http())
+        .layer(create_cors_layer(&config));
 
-    let listener = tokio::net::TcpListener::bind(ip_address)
-        .await
-        .map_err(|err| AppError::OperationFailed(err.to_string()))?;
+    let ip_address = SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::UNSPECIFIED, config.port));
+    tracing::info!("Application listening on http://{ip_address}");
+
+    let listener = tokio::net::TcpListener::bind(ip_address).await?;
+
     axum::serve(listener, app)
-        .await
-        .map_err(|err| AppError::OperationFailed(err.to_string()))?;
+        .with_graceful_shutdown(shutdown_signal())
+        .await?;
 
+    tracing::info!("Server shutdown completed");
     Ok(())
 }
