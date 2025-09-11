@@ -1,5 +1,4 @@
-mod redis;
 mod error;
-
-pub use redis::*;
+mod redis;
 pub use error::RedisClientError;
+pub use redis::*;

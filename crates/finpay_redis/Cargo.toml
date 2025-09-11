@@ -4,8 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-serde = { workspace = true, features = ["derive"] }
-thiserror.workspace = true
+finpay_utils = { version = "0.1.0", path = "../finpay_utils" }
 log = { workspace = true }
 openssl = { version = "0.10.73", features = ["vendored"] }
 redis = { workspace = true, features = [
@@ -15,4 +14,5 @@ redis = { workspace = true, features = [
     "tokio-comp",
     "uuid",
 ] }
-finpay_utils = { version = "0.1.0", path = "../finpay_utils" }
+serde = { workspace = true, features = ["derive"] }
+thiserror.workspace = true
