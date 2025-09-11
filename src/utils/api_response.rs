@@ -154,7 +154,7 @@ mod test {
         identifier: u8,
         email: String,
     }
-    #[tokio::test]
+    // #[tokio::test]
     // async fn test_success_response() {
     //     let sample_user = TestUser {
     //         email: "example@mailer.com".into(),
