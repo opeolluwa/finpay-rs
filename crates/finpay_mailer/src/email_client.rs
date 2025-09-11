@@ -111,6 +111,7 @@ pub trait EmailClientExt {
         &self,
         user_email: &str,
         otp: &str,
+        first_name: &str,
     ) -> impl std::future::Future<Output = Result<(), EmailError>> + Send;
 
     fn send_password_updated_email(
@@ -153,14 +154,14 @@ impl EmailClientExt for EmailClient {
         &self,
         user_email: &str,
         otp: &str,
+        first_name: &str,
     ) -> Result<(), EmailError> {
-        let template = ForgottenPasswordTemplate::new(otp, user_email);
+        let template = ForgottenPasswordTemplate::new(otp, user_email, first_name);
 
         let email = Email::builder()
-            .subject("Forgotten Password")
+            .subject("Password reset: Confirm it's really you!")
             .to(user_email)
             .template(template)
-            .from("admin@finpay.app")
             .build();
         let email_client = EmailClient::new();
 

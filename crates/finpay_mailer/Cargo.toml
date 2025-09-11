@@ -10,7 +10,6 @@ lettre = { version = "0.11.18", features = [
     "aws-lc-rs",
     "rustls",
     "rustls-platform-verifier",
-    "tracing",
     "mime03",
     "smtp-transport"
 ] }
