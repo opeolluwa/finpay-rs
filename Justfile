@@ -9,7 +9,6 @@ set export :=  true
 
 DOCKER_CMD := "docker compose -f docker-compose.yaml"
 
-
 lint:
     cargo fmt 
     cargo sort -w

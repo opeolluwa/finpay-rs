@@ -37,6 +37,18 @@ pub trait UsersRepositoryExt {
         &self,
         user_identifier: &Uuid,
     ) -> impl std::future::Future<Output = Result<(), RepositoryError>> + Send;
+
+    fn set_new_password(
+        &self,
+        user_identifier: &Uuid,
+        new_password: &str,
+    ) -> impl std::future::Future<Output = Result<(), RepositoryError>> + Send;
+
+    fn set_avatar_url(
+        &self,
+        user_identifier: &Uuid,
+        avatar_url: &str,
+    ) -> impl std::future::Future<Output = Result<(), RepositoryError>> + Send;
 }
 
 impl UsersRepositoryExt for UsersRepository {
@@ -97,11 +109,43 @@ impl UsersRepositoryExt for UsersRepository {
     }
 
     async fn set_verified(&self, user_identifier: &Uuid) -> Result<(), RepositoryError> {
-        sqlx::query("UPDATE users SET is_verified = $1,  updated_at = NOW () WHERE identifier = $2")
-            .bind(true)
+        sqlx::query(
+            "UPDATE users SET is_verified = $1,  updated_at = NOW () WHERE identifier = $2",
+        )
+        .bind(true)
+        .bind(user_identifier)
+        .execute(&self.pool)
+        .await?;
+
+        Ok(())
+    }
+
+    async fn set_new_password(
+        &self,
+        user_identifier: &Uuid,
+        new_password: &str,
+    ) -> Result<(), RepositoryError> {
+        let query = "UPDATE users SET password = $1 WHERE identifier = $2";
+        sqlx::query(query)
+            .bind(new_password)
             .bind(user_identifier)
             .execute(&self.pool)
             .await?;
+
+        Ok(())
+    }
+
+    async fn set_avatar_url(
+        &self,
+        user_identifier: &Uuid,
+        avatar_url: &str,
+    ) -> Result<(), RepositoryError> {
+        sqlx::query(r#"UPDATE users SET profile_picture = $2 WHERE identifier = $1"#)
+            .bind(user_identifier)
+            .bind(avatar_url)
+            .execute(&self.pool)
+            .await
+            .map_err(RepositoryError::from)?;
 
         Ok(())
     }
