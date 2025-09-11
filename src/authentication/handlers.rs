@@ -4,8 +4,8 @@ use axum_extra::TypedHeader;
 use axum_extra::headers::UserAgent;
 
 use crate::authentication::adapter::{
-    ChangePasswordRequest, ForgottenPasswordRequest, ForgottenPasswordResponse, LoginResponse,
-    RefreshTokenResponse, SetNewPasswordRequest, VerifyAccountRequest, VerifyAccountResponse,
+    ForgottenPasswordRequest, ForgottenPasswordResponse, LoginResponse, RefreshTokenResponse,
+    SetNewPasswordRequest, VerifyAccountResponse, VerifyOtpRequest, VerifyResetOtpResponse,
 };
 use crate::authentication::claims::Claims;
 use crate::utils::AuthenticatedRequest;
@@ -33,7 +33,7 @@ pub async fn signup(
 
 pub async fn verify_account(
     State(authentication_service): State<AuthenticationService>,
-    AuthenticatedRequest { request, claims }: AuthenticatedRequest<VerifyAccountRequest>,
+    AuthenticatedRequest { request, claims }: AuthenticatedRequest<VerifyOtpRequest>,
 ) -> Result<ApiResponse<VerifyAccountResponse>, ServiceError> {
     let verify_account_response = authentication_service
         .verify_account(&claims, &request)
@@ -65,7 +65,6 @@ pub async fn forgotten_password(
 ) -> Result<ApiResponse<ForgottenPasswordResponse>, ServiceError> {
     let TypedHeader(user_agent) = user_agent.ok_or_else(|| ServiceError::BadRequest)?;
 
-    println!(" the user agent {user_agent:#?}");
     let forgotten_password_response = authentication_service
         .forgotten_password(&request, &user_agent)
         .await?;
@@ -110,23 +109,32 @@ pub async fn logout() -> Result<ApiResponse<()>, ServiceError> {
 
 pub async fn verify_reset_otp(
     State(authentication_service): State<AuthenticationService>,
-    AuthenticatedRequest { request, claims }: AuthenticatedRequest<VerifyAccountRequest>,
-) -> Result<ApiResponse<VerifyAccountResponse>, ServiceError> {
-    let verify_account_response = authentication_service
+    AuthenticatedRequest { request, claims }: AuthenticatedRequest<VerifyOtpRequest>,
+) -> Result<ApiResponse<VerifyResetOtpResponse>, ServiceError> {
+    let verify_reset_otp_response = authentication_service
         .verify_reset_otp(&claims, &request)
         .await?;
     Ok(ApiResponse::builder()
         .status_code(StatusCode::OK)
-        .data(verify_account_response)
+        .data(verify_reset_otp_response)
         .message("OTP verified successfully")
         .build())
 }
 
 pub async fn change_password(
     State(user_service): State<AuthenticationService>,
-    AuthenticatedRequest { request, claims }: AuthenticatedRequest<ChangePasswordRequest>,
+    AuthenticatedRequest { request, claims }: AuthenticatedRequest<SetNewPasswordRequest>,
+    user_agent: Option<TypedHeader<UserAgent>>,
 ) -> Result<ApiResponse<()>, ServiceError> {
-    user_service.change_password(&request, &claims).await?;
+    if let Some(TypedHeader(user_agent)) = user_agent {
+        // The client sent a user agent
+        println!("{:#?}", user_agent);
+    } else {
+        // No user agent header
+        todo!()
+    }
+
+    user_service.set_new_password(&request, &claims).await?;
 
     Ok(ApiResponse::builder()
         .message("User's password changed successfully")

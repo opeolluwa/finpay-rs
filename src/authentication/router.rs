@@ -3,6 +3,7 @@ use axum::{Router, routing::post};
 
 use crate::authentication::handlers::{
     forgotten_password, login, request_refresh_token, set_new_password, verify_account,
+    verify_reset_otp,
 };
 use crate::{authentication::handlers::signup, state::AppState};
 
@@ -15,5 +16,6 @@ pub fn authentication_routers(state: &AppState) -> Router {
         .route("/reset-password", post(set_new_password))
         .route("/verify-account", post(verify_account))
         .route("/refresh-token", get(request_refresh_token))
+        .route("/verify-reset-otp", post(verify_reset_otp))
         .with_state(state.clone())
 }

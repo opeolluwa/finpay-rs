@@ -3,7 +3,6 @@ use axum::response::Response;
 use axum::{http::StatusCode, response::IntoResponse};
 use finpay_redis::RedisClientError;
 
-
 use crate::errors::{AppError, AuthenticationError, RepositoryError};
 use crate::utils::ApiResponseBuilder;
 

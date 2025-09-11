@@ -48,6 +48,18 @@ pub trait UsersServiceExt {
         &self,
         user_identifier: &Uuid,
     ) -> impl std::future::Future<Output = Result<(), ServiceError>> + Send;
+
+    fn set_password(
+        &self,
+        user_identifier: &Uuid,
+        password: &str,
+    ) -> impl std::future::Future<Output = Result<(), ServiceError>> + Send;
+
+    fn set_avatar_url(
+        &self,
+        user_identifier: &Uuid,
+        avatar_url: &str,
+    ) -> impl std::future::Future<Output = Result<(), ServiceError>>;
 }
 
 impl UsersServiceExt for UsersService {
@@ -81,5 +93,29 @@ impl UsersServiceExt for UsersService {
             .set_verified(user_identifier)
             .await
             .map_err(ServiceError::from)
+    }
+
+    async fn set_password(
+        &self,
+        user_identifier: &Uuid,
+        password: &str,
+    ) -> Result<(), ServiceError> {
+        self.repository
+            .set_new_password(user_identifier, password)
+            .await?;
+
+        Ok(())
+    }
+
+    async fn set_avatar_url(
+        &self,
+        user_identifier: &Uuid,
+        avatar_url: &str,
+    ) -> Result<(), ServiceError> {
+        self.repository
+            .set_avatar_url(user_identifier, avatar_url)
+            .await?;
+
+        Ok(())
     }
 }

@@ -4,7 +4,6 @@ use redis::{
     aio::{ConnectionManager, ConnectionManagerConfig},
 };
 
-
 use crate::RedisClientError;
 
 pub struct RedisClient {

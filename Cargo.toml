@@ -29,8 +29,10 @@ axum = { version = "0.8.4", features = [
     "ws",
 ] }
 axum-extra = { version = "0.10.1", features = ["typed-header"] }
+axum_typed_multipart = { version = "0.16.3", features = ["tempfile_3"] }
 bcrypt = "0.17.0"
 chrono = { version = "0.4.41", features = ["serde"] }
+finpay_imagekit = { version = "0.1.0", path = "crates/finpay_imagekit" }
 finpay_mailer = { version = "0.1.0", path = "crates/finpay_mailer" }
 finpay_redis = { version = "0.1.0", path = "crates/finpay_redis" }
 finpay_utils = { version = "0.1.0", path = "crates/finpay_utils" }
@@ -55,9 +57,11 @@ sqlx = { version = "0.8.6", features = [
     "chrono",
     "tls-rustls",
 ] }
+tempfile = "3.20.0"
 thiserror = "2.0.16"
 tokio = { version = "1.47.1", features = ["full"] }
-tower-http = { version = "0.6.1", features = ["trace"] }
+tower = { version = "0.5.2", features = ["limit", "timeout"] }
+tower-http = { version = "0.6.1", features = ["limit", "trace", "cors", "timeout", "sensitive-headers"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 uuid = { version = "1.18.1", features = ["serde", "v4", "v7", "v8"] }

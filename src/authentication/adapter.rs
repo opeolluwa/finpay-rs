@@ -3,6 +3,16 @@ use crate::users::{adapters::CreateUserRequest, enums::AccountType};
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationError};
 
+use axum_typed_multipart::{FieldData, TryFromMultipart};
+use tempfile::NamedTempFile;
+
+#[derive(TryFromMultipart)]
+#[try_from_multipart(rename_all = "camelCase")]
+pub struct UploadProfilePictureRequest {
+    #[form_data(limit = "1MiB")]
+    pub image: FieldData<NamedTempFile>,
+}
+
 #[derive(Serialize, Deserialize, Debug, Validate)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateAccountRequest {
@@ -89,7 +99,7 @@ pub struct SetNewPasswordRequest {
 
 #[derive(Debug, Serialize, Deserialize, Validate)]
 #[serde(rename_all = "camelCase")]
-pub struct VerifyAccountRequest {
+pub struct VerifyOtpRequest {
     #[validate(length(message = "otp is required", code = "otp", max = 6))]
     pub otp: String,
 }
@@ -146,4 +156,10 @@ fn validate_account_type(account_type: &str) -> Result<(), ValidationError> {
     }
 
     Ok(())
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VerifyResetOtpResponse {
+    pub token: String,
 }
