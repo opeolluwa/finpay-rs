@@ -1,6 +1,7 @@
 pub mod authentication;
 pub mod config;
 pub mod errors;
+pub mod invoices;
 pub mod otp;
 pub mod router;
 pub mod shared;
@@ -8,3 +9,4 @@ pub mod state;
 pub mod transactions;
 pub mod users;
 pub mod utils;
+pub mod wallet;
