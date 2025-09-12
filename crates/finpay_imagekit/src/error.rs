@@ -11,10 +11,10 @@ pub enum ImagekitError {
 impl fmt::Display for ImagekitError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ImagekitError::Reqwest(err) => write!(f, "Request error: {}", err),
-            ImagekitError::Io(err) => write!(f, "I/O error: {}", err),
-            ImagekitError::InvalidHeader(err) => write!(f, "Invalid header: {}", err),
-            ImagekitError::UploadFailed(msg) => write!(f, "Upload failed: {}", msg),
+            ImagekitError::Reqwest(err) => write!(f, "Request error: {err}"),
+            ImagekitError::Io(err) => write!(f, "I/O error: {err}"),
+            ImagekitError::InvalidHeader(err) => write!(f, "Invalid header: {err}"),
+            ImagekitError::UploadFailed(msg) => write!(f, "Upload failed: {msg}"),
         }
     }
 }

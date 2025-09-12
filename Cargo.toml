@@ -20,8 +20,6 @@ name = "lib_finpay_rs"
 path = "src/lib.rs"
 
 [dependencies]
-async-graphql = "7.0.17"
-async-graphql-axum = "7.0.17"
 axum = { version = "0.8.4", features = [
     "macros",
     "multipart",
@@ -38,13 +36,6 @@ finpay_redis = { version = "0.1.0", path = "crates/finpay_redis" }
 finpay_utils = { version = "0.1.0", path = "crates/finpay_utils" }
 jsonwebtoken = "9.3.1"
 log = "0.4.27"
-redis = { version = "0.32.4", features = [
-    "aio",
-    "cluster",
-    "connection-manager",
-    "tokio-comp",
-    "uuid",
-] }
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.143"
 sqlx = { version = "0.8.6", features = [
@@ -60,7 +51,6 @@ sqlx = { version = "0.8.6", features = [
 tempfile = "3.20.0"
 thiserror = "2.0.16"
 tokio = { version = "1.47.1", features = ["full"] }
-tower = { version = "0.5.2", features = ["limit", "timeout"] }
 tower-http = { version = "0.6.1", features = ["limit", "trace", "cors", "timeout", "sensitive-headers"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }

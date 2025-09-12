@@ -136,7 +136,7 @@ impl EmailClientExt for EmailClient {
     ) -> Result<(), EmailError> {
         let template = ConfirmEmailTemplate::new(user_email, otp, first_name);
         let email = Email::builder()
-            .subject("Confirm your account")
+            .subject("Confirm your emil")
             .to(user_email)
             .template(template)
             .build();

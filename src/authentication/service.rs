@@ -1,7 +1,5 @@
-use std::path::Path;
-use std::time::Duration;
-
 use axum_extra::headers::UserAgent;
+use axum_extra::headers::authorization::Bearer;
 use axum_typed_multipart::TypedMultipart;
 use bcrypt::hash;
 use bcrypt::{DEFAULT_COST, verify};
@@ -9,18 +7,19 @@ use finpay_imagekit::ImagekitClient;
 use finpay_mailer::{EmailClient, EmailClientExt};
 use finpay_redis::{RedisClient, RedisClientExt};
 use finpay_utils::{extract_env, generate_file_name};
+use std::path::Path;
+use std::time::Duration;
 use uuid::Uuid;
 
 use crate::authentication::adapter::{CreateUserResponse, VerifyResetOtpResponse};
 use crate::authentication::adapter::{
-    ForgottenPasswordRequest, ForgottenPasswordResponse, LoginResponse, RefreshTokenRequest,
-    RefreshTokenResponse, SetNewPasswordRequest, SetNewPasswordResponse, VerifyAccountResponse,
-    VerifyOtpRequest,
+    ForgottenPasswordRequest, ForgottenPasswordResponse, LoginResponse, RefreshTokenResponse,
+    SetNewPasswordRequest, SetNewPasswordResponse, VerifyAccountResponse, VerifyOtpRequest,
 };
 use crate::authentication::adapter::{LoginRequest, UploadProfilePictureRequest};
 use crate::authentication::claims::{Claims, TWENTY_FIVE_MINUTES};
 use crate::config::AppConfig;
-use crate::errors::AuthenticationError::InvalidOtp;
+use crate::errors::AuthenticationError::{InvalidOtp, Unauthenticated};
 use crate::errors::RepositoryError::DuplicateRecord;
 use crate::otp::service::{OtpService, OtpServiceExt};
 use crate::users::entities::User;
@@ -98,7 +97,7 @@ pub trait AuthenticationServiceExt {
 
     fn request_refresh_token(
         &self,
-        request: &RefreshTokenRequest,
+        request: &Bearer,
     ) -> impl std::future::Future<Output = Result<RefreshTokenResponse, ServiceError>> + Send;
 
     fn set_avatar_url(
@@ -112,6 +111,16 @@ pub trait AuthenticationServiceExt {
         claims: &Claims,
         request: &VerifyOtpRequest,
     ) -> impl std::future::Future<Output = Result<VerifyResetOtpResponse, ServiceError>> + Send;
+
+    fn blacklist_token(
+        &self,
+        bearer: &Bearer,
+    ) -> impl std::future::Future<Output = Result<(), ServiceError>> + Send;
+
+    fn authorize(
+        &self,
+        user_identifier: &Uuid,
+    ) -> impl std::future::Future<Output = Result<LoginResponse, ServiceError>> + Send;
 }
 
 impl AuthenticationServiceExt for AuthenticationService {
@@ -162,32 +171,9 @@ impl AuthenticationServiceExt for AuthenticationService {
         if !is_valid_password {
             return Err(ServiceError::AuthenticationError(WrongCredentials));
         }
-        let access_token = Claims::builder()
-            .subject("access_token")
-            .email(&user.email)
-            .user_identifier(&user.identifier)
-            .validity(Duration::from_secs(15 * 60 /*15 minutes */))
-            .build()?;
 
-        let refresh_token = Claims::builder()
-            .subject("refresh_token")
-            .email(&user.email)
-            .user_identifier(&user.identifier)
-            .validity(Duration::from_secs(7 * 60 * 60 /*7 hours */))
-            .build()?;
-
-        let refresh_token_out = refresh_token.generate_token()?;
-        let mut redis_client = RedisClient::new().await?;
-        redis_client.save_refresh_token(&refresh_token_out).await?;
-
-        Ok(LoginResponse {
-            access_token: access_token.generate_token()?,
-            refresh_token: refresh_token_out,
-            refresh_token_exp: refresh_token.exp,
-            iat: access_token.iat,
-            exp: access_token.exp,
-            refresh_token_iat: refresh_token.iat,
-        })
+        let auth = self.authorize(&user.identifier).await?;
+        Ok(auth)
     }
 
     async fn forgotten_password(
@@ -280,7 +266,7 @@ impl AuthenticationServiceExt for AuthenticationService {
 
         let is_valid_otp = self
             .otp_service
-            .validate_otp_for_user(&claims.user_identifier, &otp)
+            .validate_otp_for_user(&claims.user_identifier, otp)
             .await?;
 
         if !is_valid_otp {
@@ -290,12 +276,30 @@ impl AuthenticationServiceExt for AuthenticationService {
         Ok(user)
     }
 
-    //TODO:
     async fn request_refresh_token(
         &self,
-        _request: &RefreshTokenRequest,
+        bearer_token: &Bearer,
     ) -> Result<RefreshTokenResponse, ServiceError> {
-        todo!()
+        let refresh_token = bearer_token.token();
+        let mut redis_client = RedisClient::new().await?;
+
+        if redis_client
+            .check_blacklisted_token(refresh_token)
+            .await?
+            .map(|token| !token.is_empty())
+            .unwrap_or(false)
+        {
+            return Err(ServiceError::AuthenticationError(Unauthenticated));
+        };
+
+        let claims = Claims::from_token(refresh_token)?;
+        let user = self
+            .user_service
+            .find_user_by_pk(&claims.user_identifier)
+            .await?;
+
+        let auth = self.authorize(&user.identifier).await?;
+        Ok(auth)
     }
 
     async fn set_avatar_url(
@@ -374,5 +378,43 @@ impl AuthenticationServiceExt for AuthenticationService {
             .generate_token()?;
 
         Ok(VerifyResetOtpResponse { token })
+    }
+
+    async fn blacklist_token(&self, bearer: &Bearer) -> Result<(), ServiceError> {
+        let token = bearer.token();
+        let mut redis_client = RedisClient::new().await?;
+        redis_client.blacklist_refresh_token(token).await?;
+        Ok(())
+    }
+
+    async fn authorize(&self, user_identifier: &Uuid) -> Result<LoginResponse, ServiceError> {
+        let user = self.user_service.find_user_by_pk(user_identifier).await?;
+
+        let access_token = Claims::builder()
+            .subject("access_token")
+            .email(&user.email)
+            .user_identifier(&user.identifier)
+            .validity(Duration::from_secs(15 * 60 /*15 minutes */))
+            .build()?;
+
+        let refresh_token = Claims::builder()
+            .subject("refresh_token")
+            .email(&user.email)
+            .user_identifier(&user.identifier)
+            .validity(Duration::from_secs(7 * 60 * 60 /*7 hours */))
+            .build()?;
+
+        let refresh_token_out = refresh_token.generate_token()?;
+        let mut redis_client = RedisClient::new().await?;
+        redis_client.save_refresh_token(&refresh_token_out).await?;
+
+        Ok(LoginResponse {
+            access_token: access_token.generate_token()?,
+            refresh_token: refresh_token_out,
+            refresh_token_exp: refresh_token.exp,
+            iat: access_token.iat,
+            exp: access_token.exp,
+            refresh_token_iat: refresh_token.iat,
+        })
     }
 }
