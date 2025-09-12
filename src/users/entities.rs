@@ -23,4 +23,5 @@ pub struct User {
     pub is_verified: bool,
     #[serde(skip)]
     pub password: String,
+    pub avatar_url: Option<String>,
 }
