@@ -24,3 +24,8 @@ run-dev:
 
 test:
    DATABASE_URL=postgres://finpay:finpay@localhost:6543/finpay cargo test
+
+
+[working-directory:'src']
+create-module module_name:
+   node ../scripts/module.js {{module_name}}
