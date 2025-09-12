@@ -150,3 +150,41 @@ impl UsersRepositoryExt for UsersRepository {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use fake::{Fake, Faker};
+    use sqlx::PgPool;
+    use uuid::Uuid;
+
+    #[sqlx::test]
+    async fn test_create_user(pool: PgPool) {
+        let repository = UsersRepository::new(&pool);
+        let create_user_request: CreateUserRequest = Faker.fake();
+
+        // Create a new user
+        let new_user = repository
+            .create_account(&create_user_request)
+            .await
+            .expect("failed to create user");
+
+        let new_user_id = new_user.identifier;
+        assert!(!Uuid::is_nil(&new_user_id));
+
+        // Fetch the user back
+        let fetched = repository
+            .find_user_by_pk(&new_user_id)
+            .await
+            .expect("failed to fetch created user")
+            .unwrap();
+
+        // Verify persistence
+        assert_eq!(fetched.identifier, new_user_id);
+        assert_eq!(fetched.email, create_user_request.email);
+
+        // Optional: verify defaults/constraints
+        assert_eq!(fetched.is_verified, false); // if default status is "active"
+        assert!(fetched.created_date <= chrono::Utc::now());
+    }
+}
