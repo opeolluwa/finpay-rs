@@ -7,25 +7,20 @@ let inserts = [];
 country.forEach((c) => {
     const sql = `(
     '${uuidv4()}',
-    '${c.name.replace(/'/g, "''")}',
     '${c.code.replace(/'/g, "''")}',
     '${c.name.replace(/'/g, "''")}', 
     '${c.country.replace(/'/g, "''")}',
     '${c.flag}',
-    NOW(),
-    NOW()
   )`;
     inserts.push(sql);
 });
 
 const fullSQL = `
--- Drop table if exists (for reseeding)
-DROP TABLE IF EXISTS countries;
+
 
 -- Create table
-CREATE TABLE countries (
+CREATE TABLE IF NOT EXISTS countries (
   identifier UUID PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
   currency_code VARCHAR(10) NOT NULL,
   currency VARCHAR(100) NOT NULL,
   country VARCHAR(100) NOT NULL,
@@ -37,7 +32,6 @@ CREATE TABLE countries (
 -- Insert seed data
 INSERT INTO countries (
   identifier,
-  name,
   currency_code,
   currency,
   country,
