@@ -10,23 +10,19 @@ country.forEach((c) => {
     '${c.code.replace(/'/g, "''")}',
     '${c.name.replace(/'/g, "''")}', 
     '${c.country.replace(/'/g, "''")}',
-    '${c.flag}',
+    '${c.flag}'
   )`;
     inserts.push(sql);
 });
 
 const fullSQL = `
-
-
 -- Create table
 CREATE TABLE IF NOT EXISTS countries (
   identifier UUID PRIMARY KEY,
   currency_code VARCHAR(10) NOT NULL,
   currency VARCHAR(100) NOT NULL,
   country VARCHAR(100) NOT NULL,
-  flag TEXT,
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+  flag TEXT
 );
 
 -- Insert seed data
@@ -35,9 +31,7 @@ INSERT INTO countries (
   currency_code,
   currency,
   country,
-  flag,
-  created_at,
-  updated_at
+  flag
 ) VALUES
 ${inserts.join(",\n")}
 ;
