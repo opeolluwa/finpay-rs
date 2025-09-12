@@ -1,13 +1,8 @@
-use axum::debug_handler;
-use axum::{extract::State, http::StatusCode};
-use axum_extra::TypedHeader;
-use axum_extra::headers::UserAgent;
-
 use crate::authentication::adapter::{
     ForgottenPasswordRequest, ForgottenPasswordResponse, LoginResponse, RefreshTokenResponse,
     SetNewPasswordRequest, VerifyAccountResponse, VerifyOtpRequest, VerifyResetOtpResponse,
 };
-use crate::authentication::claims::Claims;
+use crate::errors::AuthenticationError::MissingCredentials;
 use crate::utils::AuthenticatedRequest;
 use crate::{
     authentication::{
@@ -18,6 +13,11 @@ use crate::{
     shared::middlewares::validator::ValidatedRequest,
     utils::ApiResponse,
 };
+use axum::debug_handler;
+use axum::{extract::State, http::StatusCode};
+use axum_extra::TypedHeader;
+use axum_extra::headers::authorization::Bearer;
+use axum_extra::headers::{Authorization, UserAgent};
 
 pub async fn signup(
     State(service): State<AuthenticationService>,
@@ -91,10 +91,15 @@ pub async fn set_new_password(
 
 pub async fn request_refresh_token(
     State(authentication_service): State<AuthenticationService>,
-    claims: Claims,
+    bearer_token: Option<TypedHeader<Authorization<Bearer>>>,
 ) -> Result<ApiResponse<RefreshTokenResponse>, ServiceError> {
+    let Some(bearer_token) = bearer_token else {
+        return Err(ServiceError::AuthenticationError(MissingCredentials));
+    };
+
+    let TypedHeader(Authorization(bearer)) = bearer_token;
     let refresh_token_response = authentication_service
-        .request_refresh_token(&claims)
+        .request_refresh_token(&bearer)
         .await?;
 
     Ok(ApiResponse::builder()
@@ -103,8 +108,23 @@ pub async fn request_refresh_token(
         .build())
 }
 
-pub async fn logout() -> Result<ApiResponse<()>, ServiceError> {
-    todo!()
+pub async fn logout(
+    State(authentication_service): State<AuthenticationService>,
+    bearer_token: Option<TypedHeader<Authorization<Bearer>>>,
+) -> Result<ApiResponse<()>, ServiceError> {
+    let Some(bearer_token) = bearer_token else {
+        return Err(ServiceError::AuthenticationError(MissingCredentials));
+    };
+
+    let TypedHeader(Authorization(bearer_token)) = bearer_token;
+    authentication_service
+        .blacklist_token(&bearer_token)
+        .await?;
+
+    Ok(ApiResponse::builder()
+        .data(())
+        .message("logged out successfully")
+        .build())
 }
 
 pub async fn verify_reset_otp(
@@ -128,7 +148,7 @@ pub async fn change_password(
 ) -> Result<ApiResponse<()>, ServiceError> {
     if let Some(TypedHeader(user_agent)) = user_agent {
         // The client sent a user agent
-        println!("{:#?}", user_agent);
+        println!("{user_agent:#?}");
     } else {
         // No user agent header
         todo!()

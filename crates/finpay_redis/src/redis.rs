@@ -17,7 +17,6 @@ impl RedisClient {
             redis::Client::open(redis_connection_url).map_err(RedisClientError::RedisError)?;
 
         let config = ConnectionManagerConfig::new().set_number_of_retries(5);
-        // .set_automatic_resubscription();
         let connection_manager =
             redis::aio::ConnectionManager::new_with_config(redis_client, config)
                 .await
@@ -52,6 +51,11 @@ pub trait RedisClientExt {
         &mut self,
         key: &str,
     ) -> impl std::future::Future<Output = Result<u64, RedisClientError>>;
+
+    fn check_blacklisted_token(
+        &mut self,
+        token: &str,
+    ) -> impl Future<Output = Result<Option<String>, RedisClientError>> + Send;
 }
 
 impl RedisClientExt for RedisClient {
@@ -111,6 +115,20 @@ impl RedisClientExt for RedisClient {
         let result: u64 = self
             .connection_manager
             .ttl(key)
+            .await
+            .map_err(RedisClientError::from)?;
+
+        Ok(result)
+    }
+
+    async fn check_blacklisted_token(
+        &mut self,
+        token: &str,
+    ) -> Result<Option<String>, RedisClientError> {
+        let key = &format!("blacklisted_token:{token}");
+        let result: Option<String> = self
+            .connection_manager
+            .get(key)
             .await
             .map_err(RedisClientError::from)?;
 

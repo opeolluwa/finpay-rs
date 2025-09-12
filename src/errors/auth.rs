@@ -18,6 +18,8 @@ pub enum AuthenticationError {
     JwtError(#[from] jsonwebtoken::errors::Error),
     #[error("{0}")]
     ValidationError(String),
+    #[error("Unauthenticated! Please login and retry")]
+    Unauthenticated,
 }
 
 impl AuthenticationError {
@@ -30,6 +32,7 @@ impl AuthenticationError {
             AuthenticationError::InvalidOtp => StatusCode::UNAUTHORIZED,
             AuthenticationError::AppError(err) => err.status_code(),
             AuthenticationError::JwtError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            _ => StatusCode::UNAUTHORIZED,
         }
     }
 }
