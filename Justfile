@@ -20,3 +20,7 @@ logs:
 run-dev:
     {{DOCKER_CMD}} up -d
     @just logs
+
+
+test:
+   DATABASE_URL=postgres://finpay:finpay@localhost:6543/finpay cargo test

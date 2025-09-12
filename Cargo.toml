@@ -56,3 +56,6 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 uuid = { version = "1.18.1", features = ["serde", "v4", "v7", "v8"] }
 validator = { version = "0.20.0", features = ["derive"] }
+fake = { version = "4.4.0", features = ["chrono", "derive", "url", "uuid"] }
+
+
