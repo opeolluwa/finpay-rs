@@ -15,9 +15,9 @@ use crate::{
 };
 use axum::debug_handler;
 use axum::{extract::State, http::StatusCode};
-use axum_extra::TypedHeader;
 use axum_extra::headers::authorization::Bearer;
 use axum_extra::headers::{Authorization, UserAgent};
+use axum_extra::TypedHeader;
 
 pub async fn signup(
     State(service): State<AuthenticationService>,
@@ -28,6 +28,7 @@ pub async fn signup(
     Ok(ApiResponse::builder()
         .message("account creation was successful")
         .data(response)
+        .status_code(StatusCode::CREATED)
         .build())
 }
 
