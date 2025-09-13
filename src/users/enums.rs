@@ -1,11 +1,14 @@
-use fake::Dummy;
+
 use std::fmt::{Display, Formatter};
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, sqlx::Type, Dummy, Eq, PartialEq)]
+
+#[cfg_attr(test, derive(fake::Dummy))]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, sqlx::Type, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 #[sqlx(rename_all = "lowercase", type_name = "account_type_enum")]
+#[non_exhaustive]
 pub enum AccountType {
     Freelancer,
     Company,
