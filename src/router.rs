@@ -21,10 +21,13 @@ pub fn load_routes(pool: Arc<Pool<sqlx::Postgres>>) -> Router {
         .fallback(async || {
             ApiResponseBuilder::<EmptyResponseBody>::new()
                 .message(
-                    "the resource you're looking does not exist or it has been permanently moved",
+                    "The resource you're looking for does not exist, or it has been permanently moved.",
                 )
                 .status_code(StatusCode::NOT_FOUND)
                 .build()
                 .into_response()
         })
 }
+
+
+

@@ -10,3 +10,4 @@ pub mod transactions;
 pub mod users;
 pub mod utils;
 pub mod wallet;
+pub mod countries;

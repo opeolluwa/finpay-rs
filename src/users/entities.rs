@@ -5,7 +5,8 @@ use uuid::Uuid;
 
 use crate::users::enums::AccountType;
 
-#[derive(Debug, Serialize, Deserialize, FromRow)]
+#[derive(Debug, Serialize, Deserialize, FromRow, Eq, PartialEq)]
+
 #[serde(rename_all = "camelCase")]
 pub struct User {
     pub identifier: Uuid,
