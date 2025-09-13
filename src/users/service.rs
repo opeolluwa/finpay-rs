@@ -119,3 +119,12 @@ impl UsersServiceExt for UsersService {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use fake::Fake;
+    use fake::Faker;
+
+
+}

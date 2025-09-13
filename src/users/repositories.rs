@@ -17,6 +17,7 @@ impl UsersRepository {
     }
 }
 
+#[cfg_attr(test, mockall::automock)]
 pub trait UsersRepositoryExt {
     fn create_account(
         &self,
