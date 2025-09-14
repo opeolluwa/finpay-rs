@@ -16,7 +16,7 @@ pub fn load_routes(pool: Arc<Pool<sqlx::Postgres>>) -> Router {
     let state = AppState::new(pool);
 
     router
-        .merge(users_router(&state))
+        .nest("/users",users_router(&state))
         .nest("/auth", authentication_routers(&state))
         .nest("/countries", country_routes(&state))
         .route("/health", get(async move || "Healthy..."))
@@ -31,6 +31,3 @@ pub fn load_routes(pool: Arc<Pool<sqlx::Postgres>>) -> Router {
                 .into_response()
         })
 }
-
-
-

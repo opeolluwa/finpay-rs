@@ -1,10 +1,10 @@
 alias l := lint
 
 
-set dotenv-required
-set dotenv-load := true
-set dotenv-path := "server/.env"
-set export :=  true
+#set dotenv-required
+#set dotenv-load := true
+#set dotenv-path := "server/.env"
+#set export :=  true
 # set working-directory :="server"
 
 DOCKER_CMD := "docker compose -f docker-compose.yaml"

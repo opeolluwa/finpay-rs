@@ -3,9 +3,10 @@ use std::sync::Arc;
 use axum::extract::FromRef;
 use sqlx::{Pool, Postgres};
 
+use crate::authentication::service::AuthenticationService;
 use crate::countries::service::CountryService;
 use crate::otp::service::OtpService;
-use crate::{authentication::service::AuthenticationService, users::service::UsersService};
+use crate::users::service::UsersService;
 
 #[derive(Clone)]
 pub struct AppState {
