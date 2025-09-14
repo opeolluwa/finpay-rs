@@ -8,7 +8,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:15
+        image: postgres:15-alpine
         ports:
           - 5432:5432
         env:
@@ -16,29 +16,43 @@ jobs:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: test_db
         options: >-
-          --health-cmd="pg_isready -U postgres"
+          --health-cmd="pg_isready -d test_db -U postgres"
           --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=5s
           --health-timeout=5s
           --health-retries=5
 
     env:
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_db
       JWT_SIGNING_KEY: shhhhh
+      REDIS_URL: redis://localhost:6379
 
     steps:
       - uses: actions/checkout@v4
 
-      # Install Rust
+      # Install Rust (stable toolchain)
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
 
-      # Install sqlx-cli to run migrations
+      # Cache cargo registry and target dir for speed
+      - uses: Swatinem/rust-cache@v2
+
+      # Install sqlx-cli for migrations
       - run: cargo install sqlx-cli --no-default-features --features native-tls,postgres
 
       # Run migrations before tests
       - run: sqlx migrate run
 
       # Run tests
-      - run:  DATABASE_URL=postgres://postgres:postgres@localhost:5432/test_db cargo test --all --all-features
+      - run: cargo test --all --all-features
