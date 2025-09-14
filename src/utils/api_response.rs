@@ -44,7 +44,7 @@ pub struct ApiResponse<T: Serialize> {
     #[serde(skip_serializing_if = "Option::is_none")]
     message: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(flatten)]
+    // #[serde(flatten)]
     data: FlattenedOption<T>,
 
     #[serde(skip)]

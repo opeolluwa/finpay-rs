@@ -33,6 +33,8 @@ pub enum ServiceError {
     BcryptError(#[from] bcrypt::BcryptError),
     #[error("an internal error occurred due to redis client")]
     RedisClientError(#[from] RedisClientError),
+    #[error("unprocessable entity: {0}")]
+    UnprocessableEntity(String),
 }
 
 impl ServiceError {
@@ -49,6 +51,7 @@ impl ServiceError {
             ServiceError::AppError(err) => err.status_code(),
             ServiceError::RedisClientError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             ServiceError::SerdeJsonError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            ServiceError::UnprocessableEntity(_) => StatusCode::UNPROCESSABLE_ENTITY,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
