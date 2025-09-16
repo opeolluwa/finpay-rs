@@ -7,12 +7,14 @@ use crate::authentication::service::AuthenticationService;
 use crate::countries::service::CountryService;
 use crate::otp::service::OtpService;
 use crate::users::service::UsersService;
+use crate::wallet::service::WalletService;
 
 #[derive(Clone)]
 pub struct AppState {
     users_service: UsersService,
     authentication_service: AuthenticationService,
     country_service: CountryService,
+    wallet_service: WalletService,
 }
 
 impl FromRef<AppState> for UsersService {
@@ -33,6 +35,12 @@ impl FromRef<AppState> for CountryService {
     }
 }
 
+impl FromRef<AppState> for WalletService {
+    fn from_ref(services: &AppState) -> WalletService {
+        services.wallet_service.clone()
+    }
+}
+
 impl AppState {
     pub fn new(pool: Arc<Pool<Postgres>>) -> Self {
         let users_service = UsersService::new(&pool);
@@ -40,10 +48,13 @@ impl AppState {
         let authentication_service =
             AuthenticationService::new(users_service.clone(), otp_service.clone());
         let country_service = CountryService::new(&pool);
+        let wallet_service = WalletService::new(&pool);
+
         Self {
             authentication_service,
             users_service,
             country_service,
+            wallet_service,
         }
     }
 }
