@@ -9,6 +9,7 @@ use crate::{
 };
 use axum::{http::StatusCode, response::IntoResponse, routing::get, Router};
 use sqlx::Pool;
+use crate::wallet::router::wallet_routes;
 
 pub fn load_routes(pool: Arc<Pool<sqlx::Postgres>>) -> Router {
     let router = Router::new();
@@ -19,6 +20,7 @@ pub fn load_routes(pool: Arc<Pool<sqlx::Postgres>>) -> Router {
         .nest("/users",users_router(&state))
         .nest("/auth", authentication_routers(&state))
         .nest("/countries", country_routes(&state))
+        .nest("/wallet", wallet_routes(&state))
         .route("/health", get(async move || "Healthy..."))
 
         .fallback(async || {
