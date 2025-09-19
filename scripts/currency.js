@@ -1,6 +1,6 @@
 import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
-import country from "./country.json" assert { type: "json" };
+import country from "./country.json" with { type: "json" };
 
 let inserts = [];
 
