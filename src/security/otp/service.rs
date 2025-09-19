@@ -1,6 +1,6 @@
 use crate::errors::ServiceError;
-use crate::otp::adapter::GenerateOtpRequest;
-use crate::otp::repository::{OtpRepository, OtpRepositoryExt};
+use crate::security::otp::adapter::GenerateOtpRequest;
+use crate::security::otp::repository::{OtpRepository, OtpRepositoryExt};
 use chrono::{Local, TimeDelta};
 use finpay_utils::generate_otp;
 use uuid::Uuid;

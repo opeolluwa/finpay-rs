@@ -21,7 +21,7 @@ use crate::authentication::claims::{Claims, TWENTY_FIVE_MINUTES};
 use crate::config::AppConfig;
 use crate::errors::AuthenticationError::{InvalidOtp, Unauthenticated};
 use crate::errors::RepositoryError::DuplicateRecord;
-use crate::otp::service::{OtpService, OtpServiceExt};
+use crate::security::otp::service::{OtpService, OtpServiceExt};
 use crate::users::entities::User;
 use crate::{
     errors::ServiceError,

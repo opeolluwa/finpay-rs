@@ -18,11 +18,11 @@ fileList.forEach((file) => {
     if (file === "mod") {
         const content = `
        pub mod service;
-       pub mod middleware;
        pub mod repository;
        pub mod adapter;
        pub mod router;
        pub mod handler;
+       pub mod entities;
        `
         writeFileSync(`${moduleName}/${file}${extension}`, content, "utf8");
     }

@@ -1,6 +1,6 @@
 use crate::errors::RepositoryError;
-use crate::otp::adapter::GenerateOtpRequest;
-use crate::otp::entities::Otp;
+use crate::security:: otp::adapter::GenerateOtpRequest;
+use crate::security::otp::entities::Otp;
 use sqlx::{Pool, Postgres};
 use uuid::Uuid;
 

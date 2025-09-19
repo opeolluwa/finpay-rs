@@ -4,8 +4,9 @@ use axum::extract::FromRef;
 use sqlx::{Pool, Postgres};
 
 use crate::authentication::service::AuthenticationService;
+use crate::banks::service::BankService;
 use crate::countries::service::CountryService;
-use crate::otp::service::OtpService;
+use crate::security::otp::service::OtpService;
 use crate::users::service::UsersService;
 use crate::wallet::service::WalletService;
 
@@ -15,6 +16,7 @@ pub struct AppState {
     authentication_service: AuthenticationService,
     country_service: CountryService,
     wallet_service: WalletService,
+    banks_service: BankService,
 }
 
 impl FromRef<AppState> for UsersService {
@@ -41,6 +43,12 @@ impl FromRef<AppState> for WalletService {
     }
 }
 
+impl FromRef<AppState> for BankService {
+    fn from_ref(services: &AppState) -> BankService {
+        services.banks_service.clone()
+    }
+}
+
 impl AppState {
     pub fn new(pool: Arc<Pool<Postgres>>) -> Self {
         let users_service = UsersService::new(&pool);
@@ -49,12 +57,14 @@ impl AppState {
             AuthenticationService::new(users_service.clone(), otp_service.clone());
         let country_service = CountryService::new(&pool);
         let wallet_service = WalletService::new(&pool);
+        let banks_service = BankService::new(&pool);
 
         Self {
             authentication_service,
             users_service,
             country_service,
             wallet_service,
+            banks_service,
         }
     }
 }
