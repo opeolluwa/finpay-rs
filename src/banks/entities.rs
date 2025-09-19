@@ -9,5 +9,5 @@ pub struct Bank {
     pub bank_name: String,
     pub country_identifier: Uuid,
     pub created_date: DateTime<Local>,
-    pub updated_ad: Option<DateTime<Local>>,
+    pub updated_at: Option<DateTime<Local>>,
 }
