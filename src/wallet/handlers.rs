@@ -1,10 +1,10 @@
 use crate::authentication::claims::Claims;
 use crate::errors::ServiceError;
-use crate::utils::{ApiResponse, AuthenticatedRequest};
+use crate::utils::{ApiResponse, AuthenticatedRequest, PaginatedResponse, PaginationParams};
 use crate::wallet::adapters::CreateWalletRequest;
 use crate::wallet::entities::Wallet;
 use crate::wallet::service::{WalletService, WalletServiceExt};
-use axum::extract::{Path, State};
+use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use uuid::Uuid;
 
@@ -40,7 +40,11 @@ pub async fn fetch_wallet(
 
 pub async fn fetch_all_wallets(
     State(wallet_service): State<WalletService>,
-    AuthenticatedRequest { claims, request }: AuthenticatedRequest<CreateWalletRequest>,
-) -> Result<ApiResponse<Wallet>, ServiceError> {
-    todo!()
+    claims: Claims,
+    Query(pagination_params): Query<PaginationParams>,
+) -> Result<ApiResponse<PaginatedResponse<Wallet>>, ServiceError> {
+    let response = wallet_service
+        .fetch_all_wallets(&claims, &pagination_params)
+        .await?;
+    Ok(ApiResponse::builder().data(response).build())
 }
