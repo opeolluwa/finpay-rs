@@ -48,3 +48,11 @@ pub async fn fetch_all_wallets(
         .await?;
     Ok(ApiResponse::builder().data(response).build())
 }
+
+pub async fn retrieve_wallet_balance(
+    State(wallet_service): State<WalletService>,
+    claims: Claims,
+    Path(wallet_identifier): Path<Uuid>,
+) -> Result<ApiResponse<PaginatedResponse<Wallet>>, ServiceError> {
+  todo!()
+}

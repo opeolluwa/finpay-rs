@@ -1,1 +1,0 @@
-import countriesIdentifier from "./country_identifier.json" assert {type: "json˝"}

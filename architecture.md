@@ -20,4 +20,8 @@ Users have :
 
 
 ## Transactions
-The transactions connect users 
+The transactions connect users
+
+
+
+## Wallet is a wrapper for account and currency

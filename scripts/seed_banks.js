@@ -1,4 +1,4 @@
-import countriesIdentifier from "./country_identifier.json" with {type: "json"}
+import countriesIdentifier from "./seed/country_identifier.json" with {type: "json"}
 import {faker} from '@faker-js/faker';
 import {v4 as uuidv4} from "uuid";
 import fs from "node:fs"
@@ -54,6 +54,6 @@ ${inserts.join(",\n")}
 `
 
 // Write to file
-fs.writeFileSync("seed_banks.sql", fullSQL, "utf8");
+fs.writeFileSync("sql/seed_banks.sql", fullSQL, "utf8");
 
 console.log("✅ Seeder generated: seed_banks.sql");
