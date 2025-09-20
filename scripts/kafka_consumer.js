@@ -7,7 +7,7 @@ const command = spawn(
         '-it', // interactive mode
         '--workdir', '/opt/kafka/bin/',
         'broker',
-        'sh', '-c', './kafka-console-producer.sh --bootstrap-server localhost:9092 --topic test'
+        'sh', '-c', './kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic test --from-beginning'
     ],
     { stdio: 'inherit' } // hand over terminal directly
 );
