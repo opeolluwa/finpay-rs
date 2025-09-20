@@ -4,7 +4,7 @@
 
 <template>
   <main class="">
-    <div class="bg-gray-100 flex justify-between min-h-screen align-center py-24 wrapper ">
+    <div class="bg-gray-200 flex justify-between min-h-screen align-center py-24 wrapper ">
 
       <div class="">
         <p class="text-sm">WELCOME TO MACRO</p>
