@@ -1,6 +1,6 @@
 import fs from "fs";
-import { v4 as uuidv4 } from "uuid";
-import country from "./country.json" with { type: "json" };
+import {v4 as uuidv4} from "uuid";
+import country from "./seed/country.json" with {type: "json"};
 
 let inserts = [];
 
@@ -38,6 +38,6 @@ ${inserts.join(",\n")}
 `;
 
 // Write to file
-fs.writeFileSync("seed_countries.sql", fullSQL, "utf8");
+fs.writeFileSync("sql/seed_countries.sql", fullSQL, "utf8");
 
 console.log("✅ Seeder generated: seed_countries.sql");
