@@ -28,7 +28,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 30s  # Wait 30 seconds before starting health checks
+      start_period: 60s
 
   postgres:
     image: postgres:15-alpine 
