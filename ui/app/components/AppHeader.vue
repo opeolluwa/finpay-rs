@@ -17,38 +17,39 @@ const pageRoutes: PageRoute[] = [
   },
   {
     path: "/products",
-    label: "Accountans"
+    label: "Products"
   },
   {
     path: "/services",
-    label: "Pricing"
+    label: "Services"
   },
   {
     path: "/about",
-    label: "Resources"
+    label: "Pricing"
   }
 ]
 
 </script>
 
 <template>
-  <header class="wrapper flex justify-between items-center min-h-16 sm:min-h-24 bg-gray-100">
-    <AppLogo class="w-24"/>
+  <header class="wrapper flex justify-between  items-center min-h-16 sm:min-h-24 bg-primary-50/10 ">
+    <AppLogo class="w-36"/>
 
-    <ul class="hidden sm:flex gap-x-5 align-center items-center">
+    <ul class="flex  align-center items-center gap-x-12">
       <li
           v-for="(route, index) in pageRoutes" :key=index
-          class="capitalize text-[120%] hover:text-app-green hover:font-medium transition-all ease-in-out">
+          class="capitalize text-[120%] hover:text-primary hover:font-medium transition-all ease-in-out">
         <NuxtLink :to="route.path"> {{ route.label }}</NuxtLink>
       </li>
     </ul>
 
     <div class="flex gap-x-6">
-      <UButton color="transparent" size="xl" class="hidden sm:block bg-none">
-        login
+      <UButton color="transparent" size="xl"
+               class="rounded-2xl  px-8 py-3 border-gray-300 border  capitalize cursor-pointer">
+        Login
       </UButton>
-      <UButton color="app-lime-300" size="xl" class="bg-app-lime-400 rounded-full px-6">
-Sign up
+      <UButton color="primary-300" size="xl" class="bg-primary rounded-2xl text-white px-8 py-3   cursor-pointer">
+        Sign up
       </UButton>
     </div>
 

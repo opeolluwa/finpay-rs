@@ -1,21 +1,50 @@
 <script setup lang="ts">
+import {UForm} from "#components";
 
 </script>
 
 <template>
   <main class="">
-    <div class="bg-gray-200 flex justify-between min-h-screen align-center py-24 wrapper ">
+    <div
+        class=" bg-linear-to-bl from-primary-50/20 to-primary-50/10 grid grid-cols-12 justify-between items-center min-h-screen align-center py-24 wrapper ">
 
-      <div class="">
-        <p class="text-sm">WELCOME TO MACRO</p>
-        <h1 class="text-6xl capitalize text-black ">Keep making <br/> money for you</h1>
+      <div class="col-span-5">
+        <h1 class="text-6xl leading-20 text-black">
+          <span class="font-bold">Get paid early</span> <br/>
+          save automatically <br/>
+          all your pay
+        </h1>
+        <p class="text-xl leading-9 text-gray-500 mt-3">Support small businesses and freelancers with simple invoicing
+          and powerful integrations, and cash flow
+          tools </p>
+        <div class="mt-3">
+
+          <UForm >
+            <UFormGroup
+                label="Business Email"
+                name="email"
+
+            >
+              <UInput
+
+                  size="xl"
+                  placeholder="Type your business email..."
+                  class="rounded-xl py-3 px-6 bg-transparent"
+              />
+            </UFormGroup>
+
+            <UButton size="xl" class="rounded-xl py-3 px-6">
+              Get Started
+            </UButton>
+          </UForm>
+
+
+        </div>
       </div>
 
-      <div>
-        <p class="w-2/3">
-          Macr&apos;s online banking system allows you to manage you funds and perfectly control your cash flow
-        </p>
-        <UButton size="xl" class="bg-black rounded-full px-6 py-3 mt-2"> Bank with Macro</UButton>
+
+      <div class="col-span-7">
+        <img src="~/assets/img/hero.png"/>
       </div>
     </div>
 
