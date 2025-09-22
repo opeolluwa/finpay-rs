@@ -3,7 +3,7 @@
 </script>
 
 <template>
-  <img src="~/assets/img/app-logo.png">
+  <img src="~/assets/img/finpay.png">
 </template>
 
 <style scoped>
