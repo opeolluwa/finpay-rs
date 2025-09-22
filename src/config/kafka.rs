@@ -1,12 +1,14 @@
 use crate::config::AppConfig;
 use crate::errors::AppError;
+use rdkafka::consumer::{Consumer, StreamConsumer};
+use rdkafka::message::Message;
 use rdkafka::producer::{FutureProducer, FutureRecord};
 use rdkafka::util::Timeout;
 use rdkafka::ClientConfig;
 use serde::de::DeserializeOwned;
-use serde::Deserialize;
 use serde::Serialize;
 use std::time::Duration;
+use futures::StreamExt;
 
 pub struct KafkaProducer {
     stream: FutureProducer,
@@ -15,7 +17,7 @@ pub struct KafkaProducer {
 #[derive(Serialize, Debug)]
 pub struct KafkaMessage<T>
 where
-    T: serde::Serialize + DeserializeOwned + std::fmt::Debug + std::fmt::Display,
+    T: Serialize + DeserializeOwned + std::fmt::Debug + std::fmt::Display,
 {
     pub topic: String,
     pub message: T,
@@ -25,8 +27,8 @@ impl KafkaProducer {
     pub async fn new() -> Result<Self, AppError> {
         let app_config = AppConfig::from_env()?;
 
-        let producer: FutureProducer = ClientConfig::default()
-            .set("bootstrap.servers", app_config.kafka_broker)
+        let producer: FutureProducer = ClientConfig::new()
+            .set("bootstrap.servers", &app_config.kafka_broker)
             .set("message.timeout.ms", "5000")
             .create()
             .map_err(|err| {
@@ -39,14 +41,14 @@ impl KafkaProducer {
 
     pub async fn send<T>(&self, message: KafkaMessage<T>) -> Result<(), AppError>
     where
-        T: serde::Serialize + DeserializeOwned + std::fmt::Debug + std::fmt::Display,
+        T: Serialize + DeserializeOwned + std::fmt::Debug + std::fmt::Display,
     {
         let serialized_message = serde_json::to_string(&message).map_err(|err| {
             tracing::error!("Failed to serialize kafka message: {err}");
             AppError::OperationFailed("failed to serialize kafka message".to_string())
         })?;
 
-        let record = FutureRecord::to(message.topic.as_str())
+        let record = FutureRecord::to(&message.topic)
             .payload(&serialized_message)
             .key("test");
 
@@ -62,4 +64,34 @@ impl KafkaProducer {
             ))),
         }
     }
+}
+
+pub struct KafkaConsumer {
+    stream: StreamConsumer,
+}
+
+impl KafkaConsumer {
+    pub async fn new(group_id: &str, topics: &[&str]) -> Result<Self, AppError> {
+        let app_config = AppConfig::from_env()?;
+
+        let consumer: StreamConsumer = ClientConfig::new()
+            .set("bootstrap.servers", &app_config.kafka_broker)
+            .set("group.id", group_id)
+            .set("enable.partition.eof", "false")
+            .set("session.timeout.ms", "6000")
+            .set("enable.auto.commit", "true")
+            .create()
+            .map_err(|err| {
+                tracing::error!("Failed to create kafka consumer: {err}");
+                AppError::OperationFailed("failed to create kafka consumer".to_string())
+            })?;
+
+        consumer.subscribe(topics).map_err(|err| {
+            tracing::error!("Failed to subscribe to topics: {err}");
+            AppError::OperationFailed("failed to subscribe to kafka topics".to_string())
+        })?;
+
+        Ok(Self { stream: consumer })
+    }
+
 }
