@@ -1,7 +1,7 @@
 use tower_http::cors::AllowOrigin;
 
 use finpay_utils::extract_env;
-
+use crate::config::kafka::KafkaProducer;
 use crate::errors::AppError;
 
 #[derive(Debug)]
@@ -14,6 +14,7 @@ pub struct AppConfig {
     pub port: u16,
     pub environment: String,
     pub allowed_origins: AllowOrigin,
+    pub kafka_broker: String,
 }
 
 impl AppConfig {
@@ -41,6 +42,7 @@ impl AppConfig {
             AllowOrigin::list(origins.into_iter().map(|s| s.parse().unwrap()))
         };
 
+        let kafka_broker = extract_env::<String>("KAFKA_BROKER");
         let database_url = extract_env("DATABASE_URL");
         Ok(Self {
             database_url,
@@ -51,6 +53,7 @@ impl AppConfig {
             port,
             environment,
             allowed_origins,
+            kafka_broker,
         })
     }
 }
