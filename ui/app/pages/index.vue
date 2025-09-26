@@ -7,26 +7,25 @@
     <div
         class="  bg-primary-50/10  flex grid-cols-12 justify-between items-center min-h-screen align-center py-24 wrapper  pb-80">
 
-      <div class="col-span-7 flex flex-col gap-y-10">
-        <h1 class="text-6xl leading-22 font-medium">
+      <div class="col-span-7 flex flex-col gap-y-5 sm:gap-y-10">
+        <h1 class="text-3xl sm:text-6xl leading-10 sm:leading-22 font-medium">
           <span class="font-extrabold">Get paid early</span> <br/>
           save automatically <br/> all your pay
         </h1>
-        <p class="text-xl leading-9 text-gray-500">Support small businesses and freelancers with simple invoicing
+        <p class="sm:text-xl leading-7 sm:leading-9 text-gray-500">Support small businesses and freelancers with simple
+          invoicing
           and powerful integrations, and cash flow
           tools </p>
         <div class="mt-3">
 
           <form class=" rounded-xl grid grid-cols-12  bg-white border-gray-300 border-2 hover:border-primary">
-
-
             <input
                 size="xl"
                 placeholder="Type your business email..."
-                class="block col-span-8 py-3 px-6 bg-transparent border-0 focus:ring-0 focus:border-0 shadow-none focus:outline-0 hover:outline-none"
+                class="block col-span-8 py-1 sm:py-3 px-6 bg-transparent border-0 focus:ring-0 focus:border-0 shadow-none focus:outline-0 hover:outline-none"
             />
 
-            <UButton size="xl" class="rounded-xl block py-3 px-6 col-span-4 my-[1px]">
+            <UButton size="xl" class="rounded-xl block -3 px-6 col-span-4 my-[1px]">
               Get Started
               <UIcon name="heroicons:arrow-up-right" class="size-5"/>
             </UButton>
@@ -112,6 +111,32 @@
       <div class="w-1/2">
         <p class="text-primary capitalize">STEP</p>
         <h2 class="leading-20 text-5xl font-medium">Experience that grows with your scale</h2>
+      </div>
+
+      <div class="grid grid-cols-12 gap-x-4 justify-between w-full">
+        <div class="steps">
+          <h3 class="text-7xl ">1</h3>
+          <div>
+            <h4> Open account</h4>
+            <p>Transfer money from one account into another and start earning up</p>
+          </div>
+        </div>
+
+        <div class="steps">
+          <h3 class="text-7xl">2</h3>
+          <div>
+            <h4>Move money</h4>
+            <p>Transfer money from one account into another and start earning up</p>
+          </div>
+        </div>
+
+        <div class="steps">
+          <h3 class="text-7xl">3</h3>
+          <div>
+            <h4>Watch you balance grow</h4>
+            <p>Accessed instantly and remained insulated from market volatility</p>
+          </div>
+        </div>
       </div>
     </div>
   </main>

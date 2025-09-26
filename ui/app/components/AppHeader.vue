@@ -35,7 +35,7 @@ const pageRoutes: PageRoute[] = [
   <header class="wrapper flex justify-between  items-center min-h-16 sm:min-h-24 bg-primary-50/10 ">
     <AppLogo class="w-36"/>
 
-    <ul class="flex  align-center items-center gap-x-12">
+    <ul class="  align-center items-center gap-x-12 hidden sm:flex">
       <li
           v-for="(route, index) in pageRoutes" :key=index
           class="capitalize text-[120%] hover:text-primary hover:font-medium transition-all ease-in-out">
@@ -43,7 +43,7 @@ const pageRoutes: PageRoute[] = [
       </li>
     </ul>
 
-    <div class="flex gap-x-6">
+    <div class="flex gap-x-6 hidden sm:block">
       <UButton color="transparent" size="xl"
                class="rounded-2xl  px-8 py-3 border-gray-300 border  capitalize cursor-pointer">
         Login
