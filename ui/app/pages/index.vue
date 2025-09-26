@@ -82,18 +82,36 @@
 
     <div class="wrapper bg-white">
 
-      <p class="text-primary capitalize text-center">why us</p>
+      <p class="text-primary uppercase text-center">why us</p>
       <h2 class="leading-20 text-5xl font-medium text-center">Why they prefer Finpay</h2>
       <div class="grid grid-rows-2 grid-cols-12 items-center gap-x-20 py-12 relative mt-8 ">
-        <div class="col-span-6 row-span-1 bg-primary-50/20  wrapper  py-12 rounded-xl">
+        <div class="col-span-6 row-span-1 bg-primary-50/10  wrapper  py-12 rounded-3xl">
           <h4 class="text-9xl font-bold text-primary "> 3k+</h4>
-          <p class="mt-12 font-medium text-2xl"> Business running on Finpay</p>
+          <p class="mt-12 font-medium text-4xl"> Business running on Finpay</p>
         </div>
 
-        <div class="col-span-6 row-span-1 bg-primary-50/20  wrapper  py-12 rounded-xl">
-          <p class="mt-12 font-medium text-2xl"> Instant withdraw of your funds at any time</p>
-          <img src="~/assets/img/withdraw.png" class=""/>
+        <div class="col-span-6 row-span-1 bg-primary-50/10  wrapper  py-12 rounded-3xl">
+          <p class="mt-12 font-medium text-4xl"> Instant withdraw of your funds at any time</p>
+          <img src="~/assets/img/withdraw.png" class="mt-10"/>
         </div>
+
+        <div class="row-span-1 col-span-12 flex items-center bg-primary-50/10 wrapper py-12 rounded-3xl">
+          <div class="">
+            <h4 class="text-3xl font-bold "> No assets volatility</h4>
+            <p class="mt-8 text-xl leading-8">Generate returns on your cash reserves without making any
+              investments </p>
+          </div>
+          <div>
+            <img src="~/assets/img/investmenent.png" class="rounded-xl shadow-xl"/>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-primary-700 text-white py-12 wrapper">
+      <div class="w-1/2">
+        <p class="text-primary capitalize">STEP</p>
+        <h2 class="leading-20 text-5xl font-medium">Experience that grows with your scale</h2>
       </div>
     </div>
   </main>
