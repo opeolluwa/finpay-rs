@@ -65,3 +65,24 @@ html {
 .feature img {
     @apply w-[120px] -ml-8
 }
+
+.steps {
+    @apply bg-primary-600/20 py-6 px-12 col-span-4 rounded-3xl mt-20
+}
+
+.steps h3 {
+    @apply bg-gradient-to-b from-white to-60%  via-primary-600 to-primary-600/60 inline-block text-transparent bg-clip-text font-semibold text-9xl
+}
+
+
+.steps > div {
+    @apply -mt-2
+}
+
+.steps > div h4 {
+    @apply text-2xl font-medium mt-2 mb-3
+}
+
+.steps > div p {
+    @apply text-gray-300
+}
