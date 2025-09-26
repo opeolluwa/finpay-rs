@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
 
+* {
+    font-family: 'Inter', sans-serif;
+}
 
 @theme {
 
@@ -44,4 +47,21 @@
 
 html {
     min-height: 100vh !important;
+}
+
+
+.feature {
+    @apply row-span-1 col-span-4 flex flex-col;
+}
+
+.feature h3 {
+    @apply font-medium leading-8 text-xl mt-2 mb-3
+}
+
+.feature p {
+    @apply text-[80%] w-2/3
+}
+
+.feature img {
+    @apply w-[120px] -ml-8
 }
