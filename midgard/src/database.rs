@@ -1,8 +1,12 @@
 use std::path::Path;
 
-use sqlx::{Pool, Postgres, migrate::Migrator, postgres::PgPoolOptions};
+use sqlx::Pool;
+use sqlx::Postgres;
+use sqlx::migrate::Migrator;
+use sqlx::postgres::PgPoolOptions;
 
-use crate::{config::AppConfig, errors::AppError};
+use crate::config::AppConfig;
+use crate::errors::AppError;
 
 pub struct AppDatabase {}
 

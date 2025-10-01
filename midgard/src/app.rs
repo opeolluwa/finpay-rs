@@ -45,7 +45,3 @@ pub async fn shutdown_signal() {
 
     info!("Shutdown signal received");
 }
-
-
-
-

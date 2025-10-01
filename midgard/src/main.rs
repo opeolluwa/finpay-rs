@@ -1,19 +1,18 @@
 #![warn(unused_extern_crates)]
 
-use axum::extract::DefaultBodyLimit;
+use lib_midgard::app::create_cors_layer;
+use lib_midgard::app::shutdown_signal;
 use lib_midgard::config::AppConfig;
-use lib_midgard::config::app::create_cors_layer;
-use lib_midgard::config::app::shutdown_signal;
-use lib_midgard::config::database::AppDatabase;
-use lib_midgard::config::logger::AppLogger;
+use lib_midgard::database::AppDatabase;
 use lib_midgard::errors::AppError;
+use lib_midgard::logger::AppLogger;
 use lib_midgard::router::load_routes;
 
 use std::{
     net::{Ipv4Addr, SocketAddr, SocketAddrV4},
     time::Duration,
 };
-use tower_http::{limit::RequestBodyLimitLayer, timeout::TimeoutLayer};
+use tower_http::timeout::TimeoutLayer;
 
 #[tokio::main]
 async fn main() -> Result<(), AppError> {
@@ -28,7 +27,6 @@ async fn main() -> Result<(), AppError> {
     let shared_db_pool = std::sync::Arc::new(db_pool);
 
     let app = load_routes(shared_db_pool)
-        .layer(RequestBodyLimitLayer::new(body_limit_bytes))
         .layer(TimeoutLayer::new(Duration::from_secs(10)))
         .layer(tower_http::trace::TraceLayer::new_for_http())
         .layer(create_cors_layer(&config));
