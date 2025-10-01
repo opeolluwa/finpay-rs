@@ -180,7 +180,7 @@
     <div class="bg-white mt-20">
       <p class="text-primary uppercase text-center">OUT MISSION</p>
       <h2 class="leading-20 text-5xl font-medium text-center">
-        We&apos; helped </br> imprved business
+        We&apos; helped </br> improved business
       </h2>
     </div>
   </main>

@@ -1,0 +1,11 @@
+[package]
+name = "odin_utils"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+fake = "4.3.0"
+log.workspace = true
+rand.workspace = true
+random_word = { version = "0.5.0", features = ["en"] }
+thiserror.workspace = true

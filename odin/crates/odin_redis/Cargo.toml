@@ -1,0 +1,18 @@
+[package]
+edition = "2024"
+name = "odin_redis"
+version = "0.1.0"
+
+[dependencies]
+log = { workspace = true }
+odin_utils = { version = "0.1.0", path = "../odin_utils" }
+openssl = { version = "0.10.73", features = ["vendored"] }
+redis = { workspace = true, features = [
+  "aio",
+  "cluster",
+  "connection-manager",
+  "tokio-comp",
+  "uuid",
+] }
+serde = { workspace = true, features = ["derive"] }
+thiserror.workspace = true
