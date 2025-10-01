@@ -1,11 +1,10 @@
-use axum::debug_handler;
-use crate::countries::entities::Country;
-use crate::countries::service::{CountryService, CountryServiceExt};
+use crate::entities::Country;
 use crate::errors::ServiceError;
+use crate::service::{CountryService, CountryServiceExt};
 use crate::utils::ApiResponse;
+use axum::debug_handler;
 use axum::extract::{Path, State};
 use uuid::Uuid;
-
 
 #[debug_handler]
 pub async fn fetch_all_countries(

@@ -1,0 +1,13 @@
+# Ignore build artifacts and dependencies for all Rust projects
+**/target/
+**/debug/
+**/Cargo.lock
+
+# Rustfmt backup files
+**/*.rs.bk
+
+# MSVC Windows builds of rustc generate these, which store debugging information
+**/*.pdb
+
+
+.env

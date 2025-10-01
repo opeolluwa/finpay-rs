@@ -1,9 +1,8 @@
-use crate::countries::entities::Country;
-use crate::countries::repository::{CountryRepository, CountryRepositoryExt};
+use crate::entities::Country;
 use crate::errors::ServiceError;
+use crate::repository::{CountryRepository, CountryRepositoryExt};
 use sqlx::PgPool;
 use uuid::Uuid;
-
 
 #[derive(Clone)]
 pub struct CountryService {
@@ -19,9 +18,14 @@ impl CountryService {
 }
 
 pub trait CountryServiceExt {
-    fn fetch_all(&self) -> impl std::future::Future<Output = Result<Vec<Country>, ServiceError>> + Send;
+    fn fetch_all(
+        &self,
+    ) -> impl std::future::Future<Output = Result<Vec<Country>, ServiceError>> + Send;
 
-    fn fetch_by_identifier(&self, identifier: &Uuid) -> impl std::future::Future<Output = Result<Country, ServiceError>> + Send;
+    fn fetch_by_identifier(
+        &self,
+        identifier: &Uuid,
+    ) -> impl std::future::Future<Output = Result<Country, ServiceError>> + Send;
 }
 
 impl CountryServiceExt for CountryService {

@@ -1,4 +1,4 @@
-use crate::countries::entities::Country;
+use crate::entities::Country;
 use crate::errors::RepositoryError;
 use sqlx::{PgPool, Pool, Postgres};
 use uuid::Uuid;
