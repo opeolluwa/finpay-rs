@@ -1,0 +1,10 @@
+[
+  {
+    "topic": "create-wallet",
+    "partition": 1
+  },
+  {
+    "topic": "wallet-created",
+    "partition": 1
+  }
+]
