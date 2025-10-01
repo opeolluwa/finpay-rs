@@ -1,0 +1,14 @@
+[package]
+edition = "2024"
+name = "finp_imagekit"
+version = "0.1.0"
+
+[dependencies]
+base64 = "0.22.1"
+chrono = "0.4.41"
+finpay_utils = { version = "0.1.0", path = "../finpay_utils" }
+log = "0.4.27"
+reqwest = { version = "0.12", features = ["multipart", "json"] }
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.140"
+thiserror.workspace = true
